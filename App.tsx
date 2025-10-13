@@ -51,6 +51,7 @@ const App: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [activeView, setActiveView] = useState<'potenciales' | 'nosotros'>('potenciales');
+    const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
 
 
     const mapRef = useRef<HTMLDivElement>(null);
@@ -65,10 +66,42 @@ const App: React.FC = () => {
         isSettingCenterRef.current = isSettingCenter;
     }, [isSettingCenter]);
 
+    // Dynamically load Google Maps script
+    useEffect(() => {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+        if (!apiKey) {
+            setError("La clave de API de Google Maps no está configurada. Por favor, configúrala en los secretos del entorno.");
+            return;
+        }
+
+        if ((window as any).google && (window as any).google.maps) {
+            setScriptLoaded(true);
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
+        script.async = true;
+        
+        const onScriptLoad = () => setScriptLoaded(true);
+        const onScriptError = () => setError("No se pudo cargar el script de Google Maps. Verifica la clave de API y la conexión a internet.");
+
+        script.addEventListener('load', onScriptLoad);
+        script.addEventListener('error', onScriptError);
+
+        document.head.appendChild(script);
+
+        return () => {
+            script.removeEventListener('load', onScriptLoad);
+            script.removeEventListener('error', onScriptError);
+        };
+    }, []);
+
 
     // Initialize Map & Click Listener
     useEffect(() => {
-        if (mapRef.current && !map) {
+        if (scriptLoaded && mapRef.current && !map) {
             const googleMap = new (window as any).google.maps.Map(mapRef.current, {
                 center: { lat: 19.4326, lng: -99.1332 }, // Mexico City
                 zoom: 8,
@@ -84,7 +117,7 @@ const App: React.FC = () => {
                 }
             });
         }
-    }, [map]);
+    }, [map, scriptLoaded]);
     
     // Manage Reference Point Marker
     useEffect(() => {

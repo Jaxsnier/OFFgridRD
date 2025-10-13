@@ -68,12 +68,10 @@ const App: React.FC = () => {
 
     // Dynamically load Google Maps script
     useEffect(() => {
-        // Vercel and other React build tools require the REACT_APP_ prefix
-        // to expose environment variables to the client-side code.
-        const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
         if (!apiKey) {
-            setError("La clave de API de Google Maps no está configurada. Por favor, configúrala en los secretos del entorno con el nombre REACT_APP_GOOGLE_MAPS_API_KEY.");
+            setError("La clave de API de Google Maps no está configurada. Por favor, configúrala en los secretos del entorno con el nombre GOOGLE_MAPS_API_KEY.");
             return;
         }
 

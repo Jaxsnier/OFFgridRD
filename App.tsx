@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 
@@ -321,7 +322,7 @@ const App: React.FC = () => {
                             <ul>
                                 <li>
                                     <a href="#" onClick={(e) => { e.preventDefault(); setActiveView('potenciales'); setIsSidebarOpen(false); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'potenciales' ? 'bg-blue-100 text-blue-700' : 'text-slate-700 hover:bg-slate-100'}`}>
-                                        Potenciales Clientes
+                                        Base De Datos
                                     </a>
                                 </li>
                                 <li>

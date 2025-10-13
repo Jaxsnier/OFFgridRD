@@ -1,5 +1,5 @@
 {
-  "name": "Visor de Datos de Clientes Excel",
+  "name": "OFFgridRD",
   "description": "Una aplicación interactiva para cargar, filtrar y visualizar datos de clientes desde un archivo Excel (.xlsx) directamente en el navegador.",
   "requestFramePermissions": []
 }

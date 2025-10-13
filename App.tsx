@@ -1,0 +1,391 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import * as XLSX from 'xlsx';
+
+interface Client {
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+    phone: string;
+    amount: number;
+    distance?: number;
+}
+
+// Helper function to create styled InfoWindow content
+const createInfoWindowContent = (client: Client): string => {
+    return `
+        <div style="color: #333; font-family: Arial, sans-serif; padding: 8px;">
+            <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0 0 8px 0;">${client.name}</h3>
+            <p style="font-size: 0.9rem; margin: 4px 0;"><strong>Teléfono:</strong> ${client.phone}</p>
+            <p style="font-size: 0.9rem; margin: 4px 0;"><strong>Consumo:</strong> ${client.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+        </div>
+    `;
+};
+
+
+const App: React.FC = () => {
+    const [clients, setClients] = useState<Client[]>([]);
+    const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+    const [map, setMap] = useState<any>(null);
+    const [markers, setMarkers] = useState<any[]>([]);
+    const [radiusCircle, setRadiusCircle] = useState<any>(null);
+    const [centerMarker, setCenterMarker] = useState<any>(null);
+
+    const [radiusKm, setRadiusKm] = useState<number>(5);
+    const [referencePoint, setReferencePoint] = useState<any | null>(null);
+    const [isSettingCenter, setIsSettingCenter] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
+    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+
+    const mapRef = useRef<HTMLDivElement>(null);
+    const resultListRef = useRef<HTMLUListElement>(null);
+    const infoWindowRef = useRef<any>(null);
+
+    const isSettingCenterRef = useRef(isSettingCenter);
+    const CLIENTS_PER_PAGE = 1500;
+
+    useEffect(() => {
+        isSettingCenterRef.current = isSettingCenter;
+    }, [isSettingCenter]);
+
+
+    // Initialize Map & Click Listener
+    useEffect(() => {
+        if (mapRef.current && !map) {
+            const googleMap = new (window as any).google.maps.Map(mapRef.current, {
+                center: { lat: 19.4326, lng: -99.1332 }, // Mexico City
+                zoom: 8,
+            });
+            setMap(googleMap);
+
+            infoWindowRef.current = new (window as any).google.maps.InfoWindow();
+
+            googleMap.addListener('click', (e: any) => {
+                if (isSettingCenterRef.current) {
+                    setReferencePoint(e.latLng);
+                    setIsSettingCenter(false);
+                }
+            });
+        }
+    }, [map]);
+    
+    // Manage Reference Point Marker
+    useEffect(() => {
+        if (centerMarker) {
+            centerMarker.setMap(null); 
+        }
+    
+        if (referencePoint && map) {
+            const newCenterMarker = new (window as any).google.maps.Marker({
+                position: referencePoint,
+                map: map,
+                title: 'Punto de Referencia',
+                icon: {
+                    path: (window as any).google.maps.SymbolPath.CIRCLE,
+                    scale: 7,
+                    fillColor: '#FF0000',
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: '#FFFFFF'
+                }
+            });
+            setCenterMarker(newCenterMarker);
+        } else {
+            setCenterMarker(null);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [referencePoint, map]);
+
+
+    // Center map on initial client load
+    useEffect(() => {
+        if (map && clients.length > 0) {
+            const bounds = new (window as any).google.maps.LatLngBounds();
+            clients.forEach(client => {
+                bounds.extend({ lat: client.lat, lng: client.lng });
+            });
+            map.fitBounds(bounds);
+        }
+    }, [clients, map]);
+
+    // Handle cursor change on map
+    useEffect(() => {
+        if (map) {
+            if (isSettingCenter) {
+                map.setOptions({ draggableCursor: 'crosshair' });
+            } else {
+                map.setOptions({ draggableCursor: null }); // Resets to default
+            }
+        }
+    }, [isSettingCenter, map]);
+
+
+    // Handle File Upload
+    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setLoading(true);
+        setError('');
+        clearMap();
+        setClients([]);
+        setCurrentPage(1);
+
+        try {
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const json: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+            const parsedClients: Client[] = json.slice(1).map((row: any) => {
+                const firstName = row[8] || '';
+                const lastName1 = row[9] || '';
+                const lastName2 = row[10] || '';
+                const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
+
+                return {
+                    id: row[0],
+                    name: fullName,
+                    lat: parseFloat(row[52]),
+                    lng: parseFloat(row[53]),
+                    phone: row[11] || 'N/A',
+                    amount: parseFloat(row[47]) || 0
+                };
+            }).filter(client => client.id && client.name && !isNaN(client.lat) && !isNaN(client.lng));
+
+            if (parsedClients.length === 0) {
+                throw new Error("No se encontraron clientes con datos de latitud y longitud válidos en el archivo.");
+            }
+
+            setClients(parsedClients);
+            setFilteredClients(parsedClients);
+        } catch (err: any) {
+            setError(`Error al procesar el archivo: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Pagination logic
+    const totalPages = Math.ceil(filteredClients.length / CLIENTS_PER_PAGE);
+    const paginatedClients = useMemo(() => {
+        const startIndex = (currentPage - 1) * CLIENTS_PER_PAGE;
+        const endIndex = startIndex + CLIENTS_PER_PAGE;
+        return filteredClients.slice(startIndex, endIndex);
+    }, [filteredClients, currentPage]);
+
+    // Update markers when paginatedClients change
+    useEffect(() => {
+        if (!map) return;
+
+        markers.forEach(marker => marker.setMap(null));
+        const newMarkers: any[] = [];
+        
+        paginatedClients.forEach(client => {
+            const position = { lat: client.lat, lng: client.lng };
+            const marker = new (window as any).google.maps.Marker({
+                position,
+                map,
+                title: client.name,
+            });
+
+            marker.addListener('click', () => {
+                const content = createInfoWindowContent(client);
+                if (infoWindowRef.current) {
+                    infoWindowRef.current.setContent(content);
+                    infoWindowRef.current.open(map, marker);
+                }
+
+                setSelectedClientId(client.id);
+                 setTimeout(() => {
+                    const element = document.getElementById(`client-${client.id}`);
+                    if(element) {
+                       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            });
+
+            newMarkers.push(marker);
+        });
+        
+        setMarkers(newMarkers);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginatedClients, map]);
+
+
+    const clearMap = () => {
+        markers.forEach(marker => marker.setMap(null));
+        setMarkers([]);
+        if (radiusCircle) radiusCircle.setMap(null);
+        if (centerMarker) centerMarker.setMap(null);
+        setReferencePoint(null);
+        setRadiusCircle(null);
+        setCenterMarker(null);
+        setSelectedClientId(null);
+    };
+
+
+    const handleFilter = () => {
+        if (!referencePoint) {
+            alert('Por favor, establece un punto de referencia en el mapa.');
+            return;
+        }
+
+        if (radiusCircle) {
+            radiusCircle.setMap(null);
+        }
+        const newCircle = new (window as any).google.maps.Circle({
+            strokeColor: '#007bff',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#007bff',
+            fillOpacity: 0.2,
+            map,
+            center: referencePoint,
+            radius: radiusKm * 1000,
+            clickable: false
+        });
+        setRadiusCircle(newCircle);
+
+        const clientsInRadius = clients.map(client => {
+            const clientLocation = new (window as any).google.maps.LatLng(client.lat, client.lng);
+            const distance = (window as any).google.maps.geometry.spherical.computeDistanceBetween(referencePoint, clientLocation);
+            return { ...client, distance };
+        }).filter(client => (client.distance / 1000) <= radiusKm);
+
+        clientsInRadius.sort((a, b) => a.distance - b.distance);
+        setFilteredClients(clientsInRadius);
+        setCurrentPage(1);
+        map.fitBounds(newCircle.getBounds());
+    };
+
+    const handleClientSelect = (client: Client) => {
+        if (!map || !infoWindowRef.current) return;
+
+        setSelectedClientId(client.id);
+
+        const clientIndex = paginatedClients.findIndex(c => c.id === client.id);
+
+        if (clientIndex !== -1 && markers[clientIndex]) {
+            const marker = markers[clientIndex];
+
+            const content = createInfoWindowContent(client);
+            infoWindowRef.current.setContent(content);
+            infoWindowRef.current.open(map, marker);
+
+            map.panTo(marker.getPosition());
+        }
+    };
+    
+    return (
+        <div className="flex h-screen font-sans">
+            <aside className="w-1/3 max-w-sm bg-white shadow-lg p-6 flex flex-col space-y-6 overflow-y-auto">
+                <header>
+                    <h1 className="text-2xl font-bold text-slate-800">Visor de Clientes</h1>
+                    <p className="text-sm text-slate-500">Carga y filtra datos de clientes por proximidad.</p>
+                </header>
+
+                <div className="border-t pt-4">
+                    <h2 className="font-semibold text-lg text-slate-700 mb-2">1. Cargar Archivo</h2>
+                    <input
+                        type="file"
+                        accept=".xlsx"
+                        onChange={handleFile}
+                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                     {loading && <p className="text-blue-600 mt-2">Cargando y procesando clientes...</p>}
+                     {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
+                </div>
+
+                <div className="border-t pt-4">
+                     <h2 className="font-semibold text-lg text-slate-700 mb-2">2. Filtro por Proximidad</h2>
+                     <div className="space-y-3">
+                        <button
+                            onClick={() => setIsSettingCenter(true)}
+                            className={`w-full px-4 py-2 rounded-md font-semibold text-white transition-colors ${isSettingCenter ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                        >
+                            {isSettingCenter ? 'Haz clic en el mapa...' : 'Establecer Punto de Referencia'}
+                        </button>
+                        <div>
+                             <label htmlFor="radius" className="block text-sm font-medium text-slate-600 mb-1">Radio (km)</label>
+                             <input
+                                id="radius"
+                                type="number"
+                                value={radiusKm}
+                                onChange={(e) => setRadiusKm(parseFloat(e.target.value))}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                             />
+                        </div>
+                        <button
+                            onClick={handleFilter}
+                            disabled={!referencePoint}
+                            className="w-full px-4 py-2 bg-slate-700 text-white font-semibold rounded-md hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Aplicar Filtro
+                        </button>
+                    </div>
+                </div>
+
+                <div className="border-t pt-4 flex-grow flex flex-col min-h-0">
+                    <h2 className="font-semibold text-lg text-slate-700 mb-2">3. Resultados ({filteredClients.length})</h2>
+                    <ul ref={resultListRef} className="flex-grow overflow-y-auto bg-slate-50 p-2 rounded-md space-y-2">
+                        {paginatedClients.length > 0 ? (
+                            paginatedClients.map(client => (
+                                <li
+                                    key={client.id}
+                                    id={`client-${client.id}`}
+                                    onClick={() => handleClientSelect(client)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClientSelect(client); }}
+                                    role="button"
+                                    tabIndex={0}
+                                    className={`p-3 rounded-lg shadow-sm transition-all cursor-pointer ${selectedClientId === client.id ? 'bg-blue-100 border-2 border-blue-400' : 'bg-white border hover:bg-slate-50'}`}
+                                >
+                                    <h3 className="font-semibold text-slate-800">{client.name}</h3>
+                                    <p className="text-sm text-slate-600">Tel: {client.phone}</p>
+                                    <p className="text-sm text-slate-600">Consumo: {client.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+                                    {client.distance !== undefined && (
+                                        <p className="text-sm font-medium text-blue-700 mt-1">
+                                            Distancia: {(client.distance / 1000).toFixed(2)} km
+                                        </p>
+                                    )}
+                                </li>
+                            ))
+                        ) : (
+                            <li className="text-center text-slate-500 py-4">No se encontraron clientes.</li>
+                        )}
+                    </ul>
+                    {totalPages > 1 && (
+                        <div className="flex justify-between items-center pt-4 border-t mt-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Anterior
+                            </button>
+                            <span className="text-sm text-slate-600">
+                                Página {currentPage} de {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </aside>
+            <main className="w-2/3 h-full">
+                <div ref={mapRef} className="w-full h-full" />
+            </main>
+        </div>
+    );
+};
+
+export default App;

@@ -8,7 +8,7 @@ interface MapComponentProps {
     paginatedClients: Client[];
     filteredClients: Client[];
     referencePoint: any | null;
-    radiusKm: number;
+    radiusMeters: number;
     isSettingCenter: boolean;
     onSetReferencePoint: (latLng: any) => void;
     onIsSettingCenterChange: (isSetting: boolean) => void;
@@ -24,7 +24,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     paginatedClients,
     filteredClients,
     referencePoint,
-    radiusKm,
+    radiusMeters,
     isSettingCenter,
     onSetReferencePoint,
     onIsSettingCenterChange,
@@ -147,13 +147,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 fillOpacity: 0.2,
                 map,
                 center: referencePoint,
-                radius: radiusKm * 1000,
+                radius: radiusMeters,
                 clickable: false
             });
             radiusCircleRef.current = newCircle;
             map.fitBounds(newCircle.getBounds());
         }
-    }, [referencePoint, radiusKm, map]);
+    }, [referencePoint, radiusMeters, map]);
 
     // Update client markers
     useEffect(() => {

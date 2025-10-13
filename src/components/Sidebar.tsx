@@ -14,7 +14,7 @@ interface SidebarProps {
     fileError: string;
     isSettingCenter: boolean;
     onSetCenterClick: () => void;
-    radiusKm: number;
+    radiusMeters: number;
     onRadiusChange: (value: number) => void;
     onExport: (exportType: 'all' | 'filtered') => void;
     referencePoint: any;
@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     fileError,
     isSettingCenter,
     onSetCenterClick,
-    radiusKm,
+    radiusMeters,
     onRadiusChange,
     onExport,
     referencePoint,
@@ -127,11 +127,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             {isSettingCenter ? 'Haz clic en el mapa...' : 'Establecer Punto de Referencia'}
                                         </button>
                                         <div>
-                                            <label htmlFor="radius" className="block text-sm font-medium text-slate-600 mb-1">Radio (km)</label>
+                                            <label htmlFor="radius" className="block text-sm font-medium text-slate-600 mb-1">Radio (m)</label>
                                             <input
                                                 id="radius"
                                                 type="number"
-                                                value={radiusKm}
+                                                value={radiusMeters}
                                                 onChange={(e) => onRadiusChange(parseFloat(e.target.value))}
                                                 className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                             />

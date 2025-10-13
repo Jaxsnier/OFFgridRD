@@ -17,7 +17,7 @@ const App: React.FC = () => {
     const [originalData, setOriginalData] = useState<any[][]>([]);
     const [map, setMap] = useState<any>(null);
     
-    const [radiusKm, setRadiusKm] = useState<number>(2);
+    const [radiusMeters, setRadiusMeters] = useState<number>(300);
     const [referencePoint, setReferencePoint] = useState<any | null>(null);
     const [isSettingCenter, setIsSettingCenter] = useState<boolean>(false);
     const [showOnlyNewClients, setShowOnlyNewClients] = useState<boolean>(false);
@@ -199,7 +199,7 @@ const App: React.FC = () => {
                 const clientLocation = new (window as any).google.maps.LatLng(client.lat, client.lng);
                 const distance = (window as any).google.maps.geometry.spherical.computeDistanceBetween(referencePoint, clientLocation);
                 return { ...client, distance };
-            }).filter(client => (client.distance! / 1000) <= radiusKm);
+            }).filter(client => client.distance! <= radiusMeters);
     
             clientsInRadius.sort((a, b) => a.distance! - b.distance!);
             filtered = clientsInRadius;
@@ -210,7 +210,7 @@ const App: React.FC = () => {
         }
         
         return filtered;
-    }, [clients, referencePoint, radiusKm, showOnlyNewClients, scriptLoaded]);
+    }, [clients, referencePoint, radiusMeters, showOnlyNewClients, scriptLoaded]);
 
     useEffect(() => {
         // Reset page to 1 whenever filters change
@@ -320,8 +320,8 @@ const App: React.FC = () => {
                     fileError={fileError}
                     isSettingCenter={isSettingCenter}
                     onSetCenterClick={() => { setIsSettingCenter(true); setIsSidebarOpen(false); }}
-                    radiusKm={radiusKm}
-                    onRadiusChange={setRadiusKm}
+                    radiusMeters={radiusMeters}
+                    onRadiusChange={setRadiusMeters}
                     onExport={handleExport}
                     referencePoint={referencePoint}
                     filteredClients={finalFilteredClients}
@@ -347,7 +347,7 @@ const App: React.FC = () => {
                                     paginatedClients={paginatedClients}
                                     filteredClients={finalFilteredClients}
                                     referencePoint={referencePoint}
-                                    radiusKm={radiusKm}
+                                    radiusMeters={radiusMeters}
                                     isSettingCenter={isSettingCenter}
                                     onSetReferencePoint={setReferencePoint}
                                     onIsSettingCenterChange={setIsSettingCenter}

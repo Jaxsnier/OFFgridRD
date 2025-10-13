@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import * as XLSX from 'xlsx';
 import { Client } from './src/types';
 import ApiKeyGate from './src/components/ApiKeyGate';
 import Header from './src/components/Header';
@@ -10,6 +9,9 @@ import LoadingOverlay from './src/components/LoadingOverlay';
 import InicioPage from './src/components/InicioPage';
 
 type View = 'inicio' | 'potenciales' | 'nosotros';
+
+// Fix: Declare XLSX to inform TypeScript that it's a global variable.
+declare var XLSX: any;
 
 const App: React.FC = () => {
     // State Management
@@ -134,56 +136,48 @@ const App: React.FC = () => {
         setClients([]);
         setOriginalData([]);
         setCurrentPage(1);
-        setReferencePoint(null); // Reset reference point on new file load
+        setReferencePoint(null);
 
         try {
             const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const json: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-            if (json.length < 2) {
-                throw new Error("El archivo está vacío o no tiene datos.");
-            }
             
-            setOriginalData(json);
+            // Use a Web Worker to process the file off the main thread
+            const worker = new Worker(new URL('./src/excel.worker.ts', import.meta.url), { type: 'module' });
 
-            const headers = json[0].map(h => h?.toString().toLowerCase().trim());
-            const vistoIndex = headers.indexOf('visto');
-            const comentarioIndex = headers.indexOf('comentario');
+            worker.onmessage = (event) => {
+                const { clients: parsedClients, originalData: json, error } = event.data;
 
-            const parsedClients: Client[] = json.slice(1).map((row: any) => {
-                const firstName = row[8] || '';
-                const lastName1 = row[9] || '';
-                const lastName2 = row[10] || '';
-                const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
+                if (error) {
+                    setFileError(`Error al procesar el archivo: ${error}`);
+                } else {
+                    if (parsedClients.length === 0) {
+                        setFileError("No se encontraron clientes con datos de latitud y longitud válidos.");
+                    } else {
+                        setClients(parsedClients);
+                        setOriginalData(json);
+                        
+                        // Set default reference point after data is loaded
+                        const defaultLatLng = new (window as any).google.maps.LatLng(19.461620, -70.662102);
+                        setReferencePoint(defaultLatLng);
+                    }
+                }
+                
+                setLoading(false);
+                setIsProcessingFile(false);
+                worker.terminate();
+            };
 
-                return {
-                    id: row[0] != null ? String(row[0]) : '',
-                    name: fullName,
-                    lat: parseFloat(row[52]),
-                    lng: parseFloat(row[53]),
-                    phone: row[11] || 'N/A',
-                    amount: parseFloat(row[47]) || 0,
-                    visto: (vistoIndex !== -1 ? (parseInt(row[vistoIndex]) === 1 ? 1 : 0) : 0) as (0 | 1),
-                    comentario: comentarioIndex !== -1 ? row[comentarioIndex] || '' : ''
-                };
-            }).filter(client => client.id && client.name && !isNaN(client.lat) && !isNaN(client.lng));
+            worker.onerror = (err) => {
+                setFileError(`Error en el worker: ${err.message}`);
+                setLoading(false);
+                setIsProcessingFile(false);
+                worker.terminate();
+            };
 
-            if (parsedClients.length === 0) {
-                throw new Error("No se encontraron clientes con datos de latitud y longitud válidos.");
-            }
-
-            setClients(parsedClients);
-            
-            // Set default reference point after data is loaded
-            const defaultLatLng = new (window as any).google.maps.LatLng(19.461620, -70.662102);
-            setReferencePoint(defaultLatLng);
+            worker.postMessage(data);
 
         } catch (err: any) {
-            setFileError(`Error al procesar el archivo: ${err.message}`);
-        } finally {
+            setFileError(`Error al leer el archivo: ${err.message}`);
             setLoading(false);
             setIsProcessingFile(false);
         }

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Client } from '../types';
 
 interface SidebarProps {
@@ -13,15 +13,18 @@ interface SidebarProps {
     onSetCenterClick: () => void;
     radiusKm: number;
     onRadiusChange: (value: number) => void;
-    onFilterClick: () => void;
+    onExport: (exportType: 'all' | 'filtered') => void;
     referencePoint: any;
+    clients: Client[];
     filteredClients: Client[];
     paginatedClients: Client[];
     selectedClientId: string | null;
-    onClientSelect: (client: Client) => void;
+    onClientSelect: (client: Client | null) => void;
     totalPages: number;
     currentPage: number;
     onPageChange: (page: number) => void;
+    showOnlyNewClients: boolean;
+    onShowOnlyNewClientsChange: (checked: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -36,17 +39,23 @@ const Sidebar: React.FC<SidebarProps> = ({
     onSetCenterClick,
     radiusKm,
     onRadiusChange,
-    onFilterClick,
+    onExport,
     referencePoint,
+    clients,
     filteredClients,
     paginatedClients,
     selectedClientId,
     onClientSelect,
     totalPages,
     currentPage,
-    onPageChange
+    onPageChange,
+    showOnlyNewClients,
+    onShowOnlyNewClientsChange
 }) => {
     const resultListRef = useRef<HTMLUListElement>(null);
+    const [exportOption, setExportOption] = useState<'all' | 'filtered'>('all');
+    
+    const isFiltered = clients.length > 0 && clients.length !== filteredClients.length;
 
     return (
         <div className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -87,12 +96,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     onChange={onFileChange}
                                     className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                 />
-                                {loading && <p className="text-blue-600 mt-2">Cargando y procesando clientes...</p>}
                                 {fileError && <p className="text-red-600 mt-2 text-sm">{fileError}</p>}
                             </div>
 
                             <div className="border-t pt-4">
-                                <h2 className="font-semibold text-lg text-slate-700 mb-2">2. Filtro por Proximidad</h2>
+                                <h2 className="font-semibold text-lg text-slate-700 mb-2">2. Filtros</h2>
                                 <div className="space-y-3">
                                     <button
                                         onClick={onSetCenterClick}
@@ -110,13 +118,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                         />
                                     </div>
-                                    <button
-                                        onClick={onFilterClick}
-                                        disabled={!referencePoint}
-                                        className="w-full px-4 py-2 bg-slate-700 text-white font-semibold rounded-md hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Aplicar Filtro
-                                    </button>
+                                    <div className="relative flex items-start">
+                                        <div className="flex items-center h-5">
+                                            <input
+                                                id="new-clients-filter"
+                                                name="new-clients-filter"
+                                                type="checkbox"
+                                                checked={showOnlyNewClients}
+                                                onChange={(e) => onShowOnlyNewClientsChange(e.target.checked)}
+                                                className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-300 rounded"
+                                            />
+                                        </div>
+                                        <div className="ml-3 text-sm">
+                                            <label htmlFor="new-clients-filter" className="font-medium text-slate-700">
+                                                Mostrar solo clientes no vistos
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -169,6 +187,49 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         </button>
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="border-t pt-4">
+                                <h2 className="font-semibold text-lg text-slate-700 mb-2">4. Guardar Cambios</h2>
+                                <div className="space-y-2 mb-4">
+                                    <label className="block text-sm font-medium text-slate-600">Opciones de Exportación:</label>
+                                    <div className="flex items-center">
+                                        <input
+                                            id="export-all"
+                                            name="export-option"
+                                            type="radio"
+                                            value="all"
+                                            checked={exportOption === 'all'}
+                                            onChange={() => setExportOption('all')}
+                                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-300"
+                                        />
+                                        <label htmlFor="export-all" className="ml-2 block text-sm text-slate-700">
+                                            Exportar todos los clientes ({clients.length})
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input
+                                            id="export-filtered"
+                                            name="export-option"
+                                            type="radio"
+                                            value="filtered"
+                                            checked={exportOption === 'filtered'}
+                                            onChange={() => setExportOption('filtered')}
+                                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-slate-300"
+                                            disabled={!isFiltered}
+                                        />
+                                        <label htmlFor="export-filtered" className={`ml-2 block text-sm ${isFiltered ? 'text-slate-700' : 'text-slate-400'}`}>
+                                            Exportar solo filtrados ({filteredClients.length})
+                                        </label>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => onExport(exportOption)}
+                                    disabled={clients.length === 0}
+                                    className="w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Exportar a Excel
+                                </button>
                             </div>
                         </div>
                     )}

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Client } from '../types';
 
@@ -10,20 +11,12 @@ interface MapComponentProps {
     isSettingCenter: boolean;
     onSetReferencePoint: (latLng: any) => void;
     onIsSettingCenterChange: (isSetting: boolean) => void;
-    onClientSelect: (client: Client) => void;
+    onClientSelect: (client: Client | null) => void;
+    onUpdateClient: (clientId: string, comment: string) => void;
     selectedClientId: string | null;
     infoWindowRef: React.MutableRefObject<any>;
 }
 
-const createInfoWindowContent = (client: Client): string => {
-    return `
-        <div style="color: #333; font-family: Arial, sans-serif; padding: 8px;">
-            <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0 0 8px 0;">${client.name}</h3>
-            <p style="font-size: 0.9rem; margin: 4px 0;"><strong>Teléfono:</strong> ${client.phone}</p>
-            <p style="font-size: 0.9rem; margin: 4px 0;"><strong>Consumo:</strong> ${client.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-        </div>
-    `;
-};
 
 const MapComponent: React.FC<MapComponentProps> = ({ 
     onMapLoad, 
@@ -35,6 +28,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     onSetReferencePoint,
     onIsSettingCenterChange,
     onClientSelect,
+    onUpdateClient,
     selectedClientId,
     infoWindowRef
 }) => {
@@ -45,12 +39,19 @@ const MapComponent: React.FC<MapComponentProps> = ({
     const radiusCircleRef = useRef<any>(null);
     const dataLoadedRef = useRef(false);
 
+    const getMarkerScale = (zoom: number): number => {
+        if (!zoom) return 4; // Default scale
+        // Adjust formula for a more noticeable scaling effect on zoom out
+        return Math.max(2.5, Math.min(10, zoom / 1.7));
+    };
+
     // Initialize map
     useEffect(() => {
         if (mapRef.current && !map) {
             const googleMap = new (window as any).google.maps.Map(mapRef.current, {
                 center: { lat: 19.4326, lng: -99.1332 }, // Mexico City
                 zoom: 8,
+                clickableIcons: false // Disables popups for Google's points of interest
             });
             setMap(googleMap);
             onMapLoad(googleMap);
@@ -85,19 +86,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
     }, [filteredClients]);
 
 
-    // Map click listener to set reference point
+    // Map click listener to set reference point or close InfoWindow
     useEffect(() => {
         if (!map) return;
         const clickListener = map.addListener('click', (e: any) => {
             if (isSettingCenter) {
                 onSetReferencePoint(e.latLng);
                 onIsSettingCenterChange(false);
+            } else {
+                onClientSelect(null);
             }
         });
         return () => {
             (window as any).google.maps.event.removeListener(clickListener);
         };
-    }, [map, isSettingCenter, onSetReferencePoint, onIsSettingCenterChange]);
+    }, [map, isSettingCenter, onSetReferencePoint, onIsSettingCenterChange, onClientSelect]);
 
     // Update map cursor
     useEffect(() => {
@@ -158,11 +161,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
         markers.forEach(marker => marker.setMap(null));
         const newMarkers: any[] = [];
         
+        const currentZoom = map.getZoom();
+        const scale = getMarkerScale(currentZoom);
+
         paginatedClients.forEach(client => {
             const marker = new (window as any).google.maps.Marker({
                 position: { lat: client.lat, lng: client.lng },
                 map,
                 title: client.name,
+                icon: {
+                    path: (window as any).google.maps.SymbolPath.CIRCLE,
+                    scale: scale,
+                    fillColor: client.visto === 1 ? '#28a745' : '#007bff', // Green if seen, blue otherwise
+                    fillOpacity: 1,
+                    strokeWeight: 1,
+                    strokeColor: '#FFFFFF'
+                }
             });
 
             marker.addListener('click', () => {
@@ -176,22 +190,94 @@ const MapComponent: React.FC<MapComponentProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paginatedClients, map]);
     
+    // Add zoom listener to scale markers
+    useEffect(() => {
+        if (!map) return;
+
+        const zoomListener = map.addListener('zoom_changed', () => {
+            const newZoom = map.getZoom();
+            if (!newZoom) return;
+            const newScale = getMarkerScale(newZoom);
+
+            markers.forEach(marker => {
+                const currentIcon = marker.getIcon();
+                marker.setIcon({
+                    ...currentIcon,
+                    scale: newScale
+                });
+            });
+        });
+
+        return () => {
+            (window as any).google.maps.event.removeListener(zoomListener);
+        };
+    }, [map, markers]);
+
+
     // Open InfoWindow for selected client
     useEffect(() => {
-        if (!map || !infoWindowRef.current || !selectedClientId) return;
+        if (!map || !infoWindowRef.current) {
+            return;
+        }
 
-        const client = paginatedClients.find(c => c.id === selectedClientId);
-        const marker = markers[paginatedClients.findIndex(c => c.id === selectedClientId)];
+        if (!selectedClientId) {
+            infoWindowRef.current.close();
+            return;
+        }
+
+        const client = filteredClients.find(c => c.id === selectedClientId);
+        const markerIndex = paginatedClients.findIndex(c => c.id === selectedClientId);
+        const marker = markerIndex !== -1 ? markers[markerIndex] : null;
 
         if (client && marker) {
-            const content = createInfoWindowContent(client);
-            infoWindowRef.current.setContent(content);
+            const container = document.createElement('div');
+            container.style.color = '#333';
+            container.style.fontFamily = 'Arial, sans-serif';
+            container.style.padding = '8px';
+            container.style.width = '280px';
+            container.style.fontSize = '0.9rem';
+
+            // Client Info
+            container.innerHTML = `
+                <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0 0 8px 0;">${client.name}</h3>
+                <p style="margin: 4px 0;"><strong>Teléfono:</strong> ${client.phone}</p>
+                <p style="margin: 4px 0 12px 0;"><strong>Consumo:</strong> ${client.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+            `;
+
+            // Comment Form
+            const form = document.createElement('form');
+            form.style.marginTop = '8px';
+            form.innerHTML = `
+                <label for="comment-textarea" style="display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 4px;">Comentario:</label>
+                <textarea id="comment-textarea" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; min-height: 60px; color: #334155; background-color: #fff;" rows="3"></textarea>
+                <button type="submit" style="width: 100%; margin-top: 8px; padding: 8px 12px; background-color: #007bff; color: white; font-weight: 600; border-radius: 4px; border: none; cursor: pointer;">
+                    Guardar Comentario
+                </button>
+            `;
+            const textarea = form.querySelector('#comment-textarea') as HTMLTextAreaElement;
+            textarea.value = client.comentario || '';
+
+            const button = form.querySelector('button') as HTMLButtonElement;
+            button.onmouseover = () => button.style.backgroundColor = '#0056b3';
+            button.onmouseout = () => button.style.backgroundColor = '#007bff';
+
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                onUpdateClient(client.id, textarea.value);
+                infoWindowRef.current.close();
+            });
+
+            container.appendChild(form);
+
+            infoWindowRef.current.setContent(container);
             infoWindowRef.current.open(map, marker);
             map.panTo(marker.getPosition());
         } else {
             infoWindowRef.current.close();
         }
-    }, [selectedClientId, paginatedClients, markers, map, infoWindowRef]);
+    }, [selectedClientId, filteredClients, paginatedClients, markers, map, infoWindowRef, onUpdateClient, onClientSelect]);
+
 
     return <div ref={mapRef} className="w-full h-full" />;
 };

@@ -6,4 +6,6 @@ export interface Client {
     phone: string;
     amount: number;
     distance?: number;
+    visto: 0 | 1;
+    comentario: string;
 }

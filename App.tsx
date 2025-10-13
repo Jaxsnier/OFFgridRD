@@ -52,6 +52,8 @@ const App: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [activeView, setActiveView] = useState<'potenciales' | 'nosotros'>('potenciales');
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
+    const [apiKey, setApiKey] = useState<string>('');
+    const [isKeySubmitted, setIsKeySubmitted] = useState<boolean>(false);
 
 
     const mapRef = useRef<HTMLDivElement>(null);
@@ -68,12 +70,7 @@ const App: React.FC = () => {
 
     // Dynamically load Google Maps script
     useEffect(() => {
-        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-
-        if (!apiKey) {
-            setError("La clave de API de Google Maps no está configurada. Por favor, configúrala en los secretos del entorno con el nombre GOOGLE_MAPS_API_KEY.");
-            return;
-        }
+        if (!isKeySubmitted || !apiKey) return;
 
         if ((window as any).google && (window as any).google.maps) {
             setScriptLoaded(true);
@@ -84,8 +81,14 @@ const App: React.FC = () => {
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
         script.async = true;
         
-        const onScriptLoad = () => setScriptLoaded(true);
-        const onScriptError = () => setError("No se pudo cargar el script de Google Maps. Verifica la clave de API y la conexión a internet.");
+        const onScriptLoad = () => {
+            setScriptLoaded(true);
+            setError('');
+        };
+        const onScriptError = () => {
+            setError("No se pudo cargar el script de Google Maps. Verifica que la clave de API sea correcta y no tenga restricciones que impidan su uso en este dominio.");
+            setIsKeySubmitted(false); // Allow user to re-enter key
+        };
 
         script.addEventListener('load', onScriptLoad);
         script.addEventListener('error', onScriptError);
@@ -96,7 +99,7 @@ const App: React.FC = () => {
             script.removeEventListener('load', onScriptLoad);
             script.removeEventListener('error', onScriptError);
         };
-    }, []);
+    }, [apiKey, isKeySubmitted]);
 
 
     // Initialize Map & Click Listener
@@ -335,6 +338,68 @@ const App: React.FC = () => {
         }
     };
     
+    // Fix: Correctly type the event object to allow access to form elements.
+    const handleKeySubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(''); // Clear previous errors on a new attempt
+        const input = (e.currentTarget.elements.namedItem('apiKey') as HTMLInputElement);
+        if (input && input.value.trim()) {
+            setApiKey(input.value.trim());
+            setIsKeySubmitted(true);
+        }
+    };
+
+    if (!isKeySubmitted) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-slate-100">
+                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                    <h2 className="text-2xl font-bold text-center text-slate-800">Configuración Requerida</h2>
+                    <p className="text-center text-slate-600">
+                        Para visualizar el mapa, por favor ingresa tu clave de API de Google Maps.
+                        Esta clave no se guardará y solo se usará en tu sesión actual.
+                    </p>
+                    <form onSubmit={handleKeySubmit}>
+                        <div>
+                            <label htmlFor="apiKey" className="block text-sm font-medium text-slate-700">
+                                Google Maps API Key
+                            </label>
+                            <input
+                                id="apiKey"
+                                name="apiKey"
+                                type="password"
+                                required
+                                className="w-full px-3 py-2 mt-1 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Pega tu clave aquí (comienza con AIza...)"
+                            />
+                        </div>
+                         {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
+                        <button
+                            type="submit"
+                            className="w-full px-4 py-2 mt-6 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            Cargar Mapa
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+    
+    if (!scriptLoaded) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-slate-100">
+                <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md text-center">
+                    <h2 className="text-2xl font-bold text-slate-800">Cargando Mapa...</h2>
+                    <p className="text-slate-600">Validando la clave de API y preparando el entorno. Por favor, espere.</p>
+                    <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto mt-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+        );
+    }
+    
     return (
         <div className="flex flex-col h-screen font-sans bg-slate-100">
              {/* Unified Sidebar Menu */}
@@ -377,7 +442,7 @@ const App: React.FC = () => {
                                         className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                     />
                                     {loading && <p className="text-blue-600 mt-2">Cargando y procesando clientes...</p>}
-                                    {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
+                                    {error && !isKeySubmitted && <p className="text-red-600 mt-2 text-sm">{error}</p>}
                                 </div>
 
                                 <div className="border-t pt-4">

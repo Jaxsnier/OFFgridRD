@@ -7,6 +7,9 @@ import Sidebar from './src/components/Sidebar';
 import MapComponent from './src/components/MapComponent';
 import NosotrosPage from './src/components/NosotrosPage';
 import LoadingOverlay from './src/components/LoadingOverlay';
+import InicioPage from './src/components/InicioPage';
+
+type View = 'inicio' | 'potenciales' | 'nosotros';
 
 const App: React.FC = () => {
     // State Management
@@ -14,7 +17,7 @@ const App: React.FC = () => {
     const [originalData, setOriginalData] = useState<any[][]>([]);
     const [map, setMap] = useState<any>(null);
     
-    const [radiusKm, setRadiusKm] = useState<number>(5);
+    const [radiusKm, setRadiusKm] = useState<number>(2);
     const [referencePoint, setReferencePoint] = useState<any | null>(null);
     const [isSettingCenter, setIsSettingCenter] = useState<boolean>(false);
     const [showOnlyNewClients, setShowOnlyNewClients] = useState<boolean>(false);
@@ -27,7 +30,7 @@ const App: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-    const [activeView, setActiveView] = useState<'potenciales' | 'nosotros'>('potenciales');
+    const [activeView, setActiveView] = useState<View>('inicio');
     
     // API Key and Script Loading State
     const [apiKey, setApiKey] = useState<string>('');
@@ -41,14 +44,6 @@ const App: React.FC = () => {
     const CLIENTS_PER_PAGE = 1500;
 
     // --- API Key & Script Loading Logic ---
-    useEffect(() => {
-        const savedApiKey = localStorage.getItem('googleMapsApiKey');
-        if (savedApiKey) {
-            handleKeySubmit(savedApiKey);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     useEffect(() => {
         if (!isKeySubmitted || !apiKey) return;
 
@@ -112,6 +107,17 @@ const App: React.FC = () => {
         setIsKeySubmitted(true);
     };
 
+    const handleNavClick = (view: View) => {
+        setActiveView(view);
+        if (view === 'potenciales' && !scriptLoaded) {
+            const savedApiKey = localStorage.getItem('googleMapsApiKey');
+            if (savedApiKey) {
+                handleKeySubmit(savedApiKey);
+            }
+        }
+    };
+
+
     // --- Map and Data Logic ---
     const handleMapLoad = useCallback((mapInstance: any) => {
         setMap(mapInstance);
@@ -128,6 +134,7 @@ const App: React.FC = () => {
         setClients([]);
         setOriginalData([]);
         setCurrentPage(1);
+        setReferencePoint(null); // Reset reference point on new file load
 
         try {
             const data = await file.arrayBuffer();
@@ -169,6 +176,11 @@ const App: React.FC = () => {
             }
 
             setClients(parsedClients);
+            
+            // Set default reference point after data is loaded
+            const defaultLatLng = new (window as any).google.maps.LatLng(19.461620, -70.662102);
+            setReferencePoint(defaultLatLng);
+
         } catch (err: any) {
             setFileError(`Error al procesar el archivo: ${err.message}`);
         } finally {
@@ -178,6 +190,8 @@ const App: React.FC = () => {
     };
     
     const finalFilteredClients = useMemo(() => {
+        if (!scriptLoaded) return clients.filter(c => showOnlyNewClients ? c.visto === 0 : true);
+
         let filtered = clients;
 
         if (referencePoint) {
@@ -196,7 +210,7 @@ const App: React.FC = () => {
         }
         
         return filtered;
-    }, [clients, referencePoint, radiusKm, showOnlyNewClients]);
+    }, [clients, referencePoint, radiusKm, showOnlyNewClients, scriptLoaded]);
 
     useEffect(() => {
         // Reset page to 1 whenever filters change
@@ -289,10 +303,6 @@ const App: React.FC = () => {
         setSelectedClientId(client ? client.id : null);
     };
 
-    if (!scriptLoaded) {
-        return <ApiKeyGate onSubmit={handleKeySubmit} error={apiKeyError} isLoading={isLoadingScript} />;
-    }
-
     return (
         <>
             {isProcessingFile && <LoadingOverlay />}
@@ -303,7 +313,8 @@ const App: React.FC = () => {
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
                     activeView={activeView}
-                    onNavClick={setActiveView}
+                    onNavClick={handleNavClick}
+                    isDatabaseUnlocked={scriptLoaded}
                     onFileChange={handleFile}
                     loading={loading}
                     fileError={fileError}
@@ -326,25 +337,30 @@ const App: React.FC = () => {
                 />
 
                 <main className="flex-grow min-h-0">
-                    <div className={`w-full h-full ${activeView === 'potenciales' ? '' : 'hidden'}`}>
-                        <MapComponent 
-                            onMapLoad={handleMapLoad}
-                            paginatedClients={paginatedClients}
-                            filteredClients={finalFilteredClients}
-                            referencePoint={referencePoint}
-                            radiusKm={radiusKm}
-                            isSettingCenter={isSettingCenter}
-                            onSetReferencePoint={setReferencePoint}
-                            onIsSettingCenterChange={setIsSettingCenter}
-                            onClientSelect={handleClientSelect}
-                            onUpdateClient={handleUpdateClient}
-                            selectedClientId={selectedClientId}
-                            infoWindowRef={infoWindowRef}
-                        />
-                    </div>
-                    <div className={`w-full h-full ${activeView === 'nosotros' ? '' : 'hidden'}`}>
-                       <NosotrosPage />
-                    </div>
+                    {activeView === 'inicio' && <InicioPage />}
+                    {activeView === 'nosotros' && <NosotrosPage />}
+                    {activeView === 'potenciales' && (
+                        <>
+                            {scriptLoaded ? (
+                                <MapComponent 
+                                    onMapLoad={handleMapLoad}
+                                    paginatedClients={paginatedClients}
+                                    filteredClients={finalFilteredClients}
+                                    referencePoint={referencePoint}
+                                    radiusKm={radiusKm}
+                                    isSettingCenter={isSettingCenter}
+                                    onSetReferencePoint={setReferencePoint}
+                                    onIsSettingCenterChange={setIsSettingCenter}
+                                    onClientSelect={handleClientSelect}
+                                    onUpdateClient={handleUpdateClient}
+                                    selectedClientId={selectedClientId}
+                                    infoWindowRef={infoWindowRef}
+                                />
+                            ) : (
+                                <ApiKeyGate onSubmit={handleKeySubmit} error={apiKeyError} isLoading={isLoadingScript} />
+                            )}
+                        </>
+                    )}
                 </main>
             </div>
         </>

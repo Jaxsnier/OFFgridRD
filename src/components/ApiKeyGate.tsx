@@ -18,7 +18,7 @@ const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading }) =
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-slate-100">
+            <div className="flex flex-col items-center justify-center h-full bg-slate-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md text-center">
                     <h2 className="text-2xl font-bold text-slate-800">Cargando Mapa...</h2>
                     <p className="text-slate-600">Validando la clave de API y preparando el entorno. Por favor, espere.</p>
@@ -32,12 +32,11 @@ const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading }) =
     }
     
     return (
-        <div className="flex items-center justify-center h-screen bg-slate-100">
+        <div className="flex items-center justify-center h-full bg-slate-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-center text-slate-800">Configuración Requerida</h2>
                 <p className="text-center text-slate-600">
                     Para visualizar el mapa, por favor ingresa tu clave de API de Google Maps.
-                    Esta clave no se guardará y solo se usará en tu sesión actual.
                 </p>
                 <form onSubmit={handleKeySubmit}>
                     <div>

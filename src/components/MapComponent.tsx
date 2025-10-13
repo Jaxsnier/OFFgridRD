@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Client } from '../types';
 
@@ -51,7 +52,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
             const googleMap = new (window as any).google.maps.Map(mapRef.current, {
                 center: { lat: 19.4326, lng: -99.1332 }, // Mexico City
                 zoom: 8,
-                clickableIcons: false // Disables popups for Google's points of interest
+                clickableIcons: false, // Disables popups for Google's points of interest
+                gestureHandling: 'greedy' // Allows zooming without holding Ctrl
             });
             setMap(googleMap);
             onMapLoad(googleMap);

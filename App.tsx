@@ -142,7 +142,7 @@ const App: React.FC = () => {
             const data = await file.arrayBuffer();
             
             // Use a Web Worker to process the file off the main thread
-            const worker = new Worker(new URL('./src/excel.worker.ts', import.meta.url), { type: 'module' });
+            const worker = new Worker(new URL('./src/excel.worker.ts', import.meta.url));
 
             worker.onmessage = (event) => {
                 const { clients: parsedClients, originalData: json, error } = event.data;

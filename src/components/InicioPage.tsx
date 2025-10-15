@@ -132,7 +132,7 @@ const InicioPage: React.FC = () => {
                         </div>
                         <div className="relative fade-in-up" style={{ animationDelay: '0.3s' }}>
                             <div className="bg-white/60 p-4 rounded-2xl shadow-lg">
-                                <img src="https://images.unsplash.com/photo-1624322833035-300b2b73714d?q=80&w=2070&auto=format&fit=crop" alt="Casa con paneles solares" className="rounded-xl aspect-video object-cover" />
+                                <img src="/assets/hero-image.jpg" alt="Casa con paneles solares" className="rounded-xl aspect-video object-cover" />
                             </div>
                         </div>
                     </div>
@@ -205,21 +205,21 @@ const InicioPage: React.FC = () => {
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <AnimateOnScroll direction="left">
                                <ProjectCard 
-                                    image="https://images.unsplash.com/photo-1598354220228-726f5d88a481?q=80&w=2070&auto=format&fit=crop"
+                                    image="/assets/project-santiago.jpg"
                                     title="Residencia en Santiago"
                                     description="Ahorro del 95% en factura eléctrica."
                                 />
                             </AnimateOnScroll>
                             <AnimateOnScroll direction="up" delay={200}>
                                 <ProjectCard 
-                                    image="https://images.unsplash.com/photo-1507683255338-6510f2b322a3?q=80&w=2070&auto=format&fit=crop"
+                                    image="/assets/project-santo-domingo.jpg"
                                     title="Negocio en Santo Domingo"
                                     description="Retorno de inversión en menos de 4 años."
                                 />
                             </AnimateOnScroll>
                             <AnimateOnScroll direction="right" delay={400}>
                                 <ProjectCard 
-                                    image="https://images.unsplash.com/photo-1617498725997-7d047a0648f5?q=80&w=1974&auto=format&fit=crop"
+                                    image="/assets/project-la-vega.jpg"
                                     title="Finca en La Vega"
                                     description="Energía ininterrumpida para operaciones."
                                 />

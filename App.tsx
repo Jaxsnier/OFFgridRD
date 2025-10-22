@@ -7,8 +7,9 @@ import MapComponent from './src/components/MapComponent';
 import NosotrosPage from './src/components/NosotrosPage';
 import LoadingOverlay from './src/components/LoadingOverlay';
 import InicioPage from './src/components/InicioPage';
+import CalculadoraSolarPage from './src/components/CalculadoraSolarPage';
 
-type View = 'inicio' | 'potenciales' | 'nosotros';
+type View = 'inicio' | 'calculadora' | 'potenciales' | 'nosotros';
 
 // Fix: Declare XLSX to inform TypeScript that it's a global variable.
 declare var XLSX: any;
@@ -332,6 +333,7 @@ const App: React.FC = () => {
 
                 <main className="flex-grow min-h-0">
                     {activeView === 'inicio' && <InicioPage />}
+                    {activeView === 'calculadora' && <CalculadoraSolarPage />}
                     {activeView === 'nosotros' && <NosotrosPage />}
                     {activeView === 'potenciales' && (
                         <>

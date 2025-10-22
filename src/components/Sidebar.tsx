@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Client } from '../types';
 
-type View = 'inicio' | 'potenciales' | 'nosotros';
+type View = 'inicio' | 'calculadora' | 'potenciales' | 'nosotros';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -80,6 +80,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                              <li>
                                 <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('inicio'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'inicio' ? 'bg-blue-100 text-blue-700' : 'text-slate-700 hover:bg-slate-100'}`}>
                                     Inicio
+                                </a>
+                            </li>
+                             <li>
+                                <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('calculadora'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'calculadora' ? 'bg-blue-100 text-blue-700' : 'text-slate-700 hover:bg-slate-100'}`}>
+                                    Calculadora Solar
                                 </a>
                             </li>
                             <li>

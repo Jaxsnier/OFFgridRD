@@ -33,6 +33,14 @@ export const calculateConsumption = (bill: number): number => {
     return monthlyConsumption;
 };
 
+const getNextInverterSize = (requiredSize: number): number => {
+    const availableSizes = [3, 5, 7, 10, 12];
+    const suitableInverter = availableSizes.find(size => size >= requiredSize);
+    // If requiredSize is larger than any available size, return the largest.
+    return suitableInverter ?? availableSizes[availableSizes.length - 1];
+};
+
+
 export const generateEstimates = (dailyConsumption: number): CalculationResults => {
     // Constants
     const PEAK_SUN_HOURS = 4;
@@ -46,15 +54,19 @@ export const generateEstimates = (dailyConsumption: number): CalculationResults 
     const HYBRID_AUTONOMY_DAYS = 1;
 
     // 1. Grid-Tie Calculation
-    const baseSystemSize = dailyConsumption / PEAK_SUN_HOURS;
-    const gridTiePanelCount = Math.ceil(baseSystemSize / PANEL_WATTAGE_KW);
-    const gridTieInverterSize = parseFloat(baseSystemSize.toFixed(1));
-    const gridTieCost = baseSystemSize * 1000 * COST_PER_WATT_GRIDTIE_USD;
+    let requiredGridTieSize = dailyConsumption / PEAK_SUN_HOURS;
+    if (requiredGridTieSize < 3) {
+        requiredGridTieSize = 3; // Minimum size for grid-tie is 3 kWp
+    }
+    const gridTiePanelCount = Math.ceil(requiredGridTieSize / PANEL_WATTAGE_KW);
+    const gridTieSystemSize = gridTiePanelCount * PANEL_WATTAGE_KW;
+    const gridTieInverterSize = getNextInverterSize(gridTieSystemSize);
+    const gridTieCost = gridTieSystemSize * 1000 * COST_PER_WATT_GRIDTIE_USD;
 
     const gridTie: SystemEstimate = {
         title: "Inyección a Red (Grid-Tie)",
         description: "Ideal para maximizar el ahorro en tu factura eléctrica, inyectando el excedente de energía a la red. No incluye baterías de respaldo.",
-        systemSize: parseFloat(baseSystemSize.toFixed(2)),
+        systemSize: parseFloat(gridTieSystemSize.toFixed(2)),
         panelCount: gridTiePanelCount,
         inverterSize: gridTieInverterSize,
         batterySize: 0,
@@ -62,8 +74,12 @@ export const generateEstimates = (dailyConsumption: number): CalculationResults 
     };
 
     // 2. Hybrid Calculation
+    const requiredHybridSize = dailyConsumption / PEAK_SUN_HOURS;
+    const hybridPanelCount = Math.ceil(requiredHybridSize / PANEL_WATTAGE_KW);
+    const hybridSystemSize = hybridPanelCount * PANEL_WATTAGE_KW;
+    const hybridInverterSize = getNextInverterSize(hybridSystemSize);
+
     const requiredHybridBatteryBackup = dailyConsumption * HYBRID_AUTONOMY_DAYS;
-    
     let finalHybridBatterySize: number;
     if (requiredHybridBatteryBackup <= 5) {
         finalHybridBatterySize = 5;
@@ -71,24 +87,24 @@ export const generateEstimates = (dailyConsumption: number): CalculationResults 
         finalHybridBatterySize = 10;
     }
 
-    const hybridCost = (baseSystemSize * 1000 * COST_PER_WATT_HYBRID_USD) + (finalHybridBatterySize * COST_PER_KWH_BATTERY_USD);
+    const hybridCost = (hybridSystemSize * 1000 * COST_PER_WATT_HYBRID_USD) + (finalHybridBatterySize * COST_PER_KWH_BATTERY_USD);
 
     const hybrid: SystemEstimate = {
         title: "Híbrido con Respaldo",
         description: "Combina el ahorro de la inyección a red con la seguridad de un banco de baterías para tener energía durante apagones.",
-        systemSize: parseFloat(baseSystemSize.toFixed(2)),
-        panelCount: gridTiePanelCount,
-        inverterSize: gridTieInverterSize,
+        systemSize: parseFloat(hybridSystemSize.toFixed(2)),
+        panelCount: hybridPanelCount,
+        inverterSize: hybridInverterSize,
         batterySize: finalHybridBatterySize,
         estimatedCost: parseFloat(hybridCost.toFixed(0)),
     };
 
     // 3. Off-Grid Calculation
-    const offGridSystemSize = baseSystemSize * OFFGRID_SYSTEM_OVERSIZE_FACTOR;
-    const offGridPanelCount = Math.ceil(offGridSystemSize / PANEL_WATTAGE_KW);
-    const offGridInverterSize = parseFloat(offGridSystemSize.toFixed(1));
+    const requiredOffGridSize = (dailyConsumption / PEAK_SUN_HOURS) * OFFGRID_SYSTEM_OVERSIZE_FACTOR;
+    const offGridPanelCount = Math.ceil(requiredOffGridSize / PANEL_WATTAGE_KW);
+    const offGridSystemSize = offGridPanelCount * PANEL_WATTAGE_KW;
+    const offGridInverterSize = getNextInverterSize(offGridSystemSize);
     
-    // Calculate required battery and round up to the nearest 5kWh
     const requiredOffGridBattery = dailyConsumption * OFFGRID_AUTONOMY_DAYS;
     const finalOffGridBatterySize = Math.ceil(requiredOffGridBattery / 5) * 5;
 

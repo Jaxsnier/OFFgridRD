@@ -4,11 +4,11 @@ import ProjectCard from './shared/ProjectCard';
 
 const ProjectsSection: React.FC = () => {
     return (
-        <section id="proyectos" className="py-24 bg-white">
+        <section id="proyectos" className="py-24 bg-slate-50 dark:bg-slate-800">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] mb-4">Proyectos Destacados</h2>
-                    <p className="text-lg text-[#5B5B5B] max-w-3xl mx-auto">Conoce cómo hemos ayudado a familias y empresas a dar el paso hacia la independencia energética.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] dark:text-slate-100 mb-4">Proyectos Destacados</h2>
+                    <p className="text-lg text-[#5B5B5B] dark:text-slate-400 max-w-3xl mx-auto">Conoce cómo hemos ayudado a familias y empresas a dar el paso hacia la independencia energética.</p>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <AnimateOnScroll direction="left">

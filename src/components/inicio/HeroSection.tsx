@@ -52,10 +52,10 @@ const HeroSection: React.FC = () => {
                     <div className="mb-6">
                         <Logo />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-[#1E1E1E] leading-tight mb-4 fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <h1 className="text-4xl md:text-5xl font-bold text-[#1E1E1E] dark:text-slate-100 leading-tight mb-4 fade-in-up" style={{ animationDelay: '0.2s' }}>
                         Energía solar accesible para todos en República Dominicana
                     </h1>
-                    <p className="text-lg md:text-xl text-[#5B5B5B] mb-8 fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <p className="text-lg md:text-xl text-[#5B5B5B] dark:text-slate-400 mb-8 fade-in-up" style={{ animationDelay: '0.4s' }}>
                         En OFFgridRD te ayudamos a eliminar tu factura eléctrica con sistemas solares al mejor precio.
                     </p>
                     <a 
@@ -68,7 +68,7 @@ const HeroSection: React.FC = () => {
                     </a>
                 </div>
                 <div className="relative fade-in-up" style={{ animationDelay: '0.3s' }}>
-                    <div className="relative bg-white/60 p-4 rounded-2xl shadow-lg w-full aspect-video overflow-hidden">
+                    <div className="relative bg-white/60 dark:bg-slate-800/60 p-4 rounded-2xl shadow-lg w-full aspect-video overflow-hidden">
                         <div className="relative h-full w-full rounded-xl overflow-hidden">
                             {carouselImages.map((image, index) => (
                                 <img

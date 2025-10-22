@@ -15,7 +15,25 @@ type View = 'inicio' | 'calculadora' | 'potenciales' | 'nosotros';
 declare var XLSX: any;
 
 const App: React.FC = () => {
-    // State Management
+    // --- Theme Management ---
+    const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            return storedTheme === 'dark';
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', isDarkMode);
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
+
+    const toggleDarkMode = () => {
+        setIsDarkMode(prevMode => !prevMode);
+    };
+
+    // --- State Management ---
     const [clients, setClients] = useState<Client[]>([]);
     const [originalData, setOriginalData] = useState<any[][]>([]);
     const [map, setMap] = useState<any>(null);
@@ -301,8 +319,12 @@ const App: React.FC = () => {
     return (
         <>
             {isProcessingFile && <LoadingOverlay />}
-            <div className="flex flex-col h-screen font-sans bg-slate-100">
-                <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+            <div className="bg-slate-50 dark:bg-slate-900 flex flex-col h-screen font-sans transition-colors duration-300">
+                <Header 
+                    onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                    isDarkMode={isDarkMode}
+                    toggleDarkMode={toggleDarkMode}
+                />
                 
                 <Sidebar
                     isOpen={isSidebarOpen}

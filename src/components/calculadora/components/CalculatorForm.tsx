@@ -23,14 +23,14 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onSubmit, isLoading }) 
     };
 
     return (
-        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg mb-8 max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-lg mb-8 max-w-4xl mx-auto">
             <form onSubmit={handleCalculate} className="grid sm:grid-cols-3 gap-6 items-end">
                 <div className="sm:col-span-2">
-                    <label htmlFor="monthlyBill" className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label htmlFor="monthlyBill" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         ¿Cuánto paga de luz mensualmente? (RD$)
                     </label>
                     <div className="relative">
-                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 font-bold">
+                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 dark:text-slate-400 font-bold">
                             $
                         </span>
                         <input
@@ -40,7 +40,7 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onSubmit, isLoading }) 
                             onChange={(e) => setMonthlyBill(e.target.value)}
                             placeholder="Ej: 5000"
                             required
-                            className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F76814] text-lg"
+                            className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F76814] text-lg dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400"
                         />
                     </div>
                     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}

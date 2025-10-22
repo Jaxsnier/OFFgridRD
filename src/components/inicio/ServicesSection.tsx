@@ -4,10 +4,10 @@ import ServiceCard from './shared/ServiceCard';
 
 const ServicesSection: React.FC = () => {
     return (
-        <section id="servicios" className="py-24 bg-[#F9F6F4]">
+        <section id="servicios" className="py-24 bg-white dark:bg-slate-900">
             <div className="container mx-auto px-6 text-center">
-                <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] mb-4">Nuestros Servicios</h2>
-                <p className="text-lg text-[#5B5B5B] max-w-3xl mx-auto mb-12">Ofrecemos soluciones energéticas completas, desde la planificación inicial hasta el mantenimiento a largo plazo.</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] dark:text-slate-100 mb-4">Nuestros Servicios</h2>
+                <p className="text-lg text-[#5B5B5B] dark:text-slate-400 max-w-3xl mx-auto mb-12">Ofrecemos soluciones energéticas completas, desde la planificación inicial hasta el mantenimiento a largo plazo.</p>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                      <AnimateOnScroll direction="left">
                         <ServiceCard

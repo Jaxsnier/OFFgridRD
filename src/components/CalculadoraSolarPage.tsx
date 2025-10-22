@@ -37,8 +37,9 @@ const CalculadoraSolarPage: React.FC = () => {
             return `¡Hola!%20Acabo%20de%20usar%20la%20calculadora%20solar%20y%20quisiera%20una%20cotización%20formal.%20Mi%20factura%20es%20de%20RD$${monthlyBillForWhatsapp}.`;
         }
 
+        // Fix: Corrected type guard to ensure 'title' property exists before access.
         const estimateDetails = Object.values(results).find(
-            (est): est is SystemEstimate => typeof est === 'object' && est.title === selectedEstimate
+            (est): est is SystemEstimate => typeof est === 'object' && est !== null && 'title' in est && est.title === selectedEstimate
         );
 
         if (!estimateDetails) return '';
@@ -58,12 +59,12 @@ const CalculadoraSolarPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full h-full overflow-y-auto bg-slate-100 p-4 sm:p-6 md:p-8">
+        <div className="w-full h-full overflow-y-auto bg-slate-50 dark:bg-slate-900/80 p-4 sm:p-6 md:p-8">
             <div className="max-w-6xl mx-auto">
                 <AnimateOnScroll>
                     <header className="text-center mb-10">
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">Calculadora Solar</h1>
-                        <p className="text-md md:text-lg text-slate-600 max-w-3xl mx-auto">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 mb-2">Calculadora Solar</h1>
+                        <p className="text-md md:text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
                             Estime el sistema solar que necesita y su costo aproximado en solo un paso.
                         </p>
                     </header>
@@ -76,8 +77,8 @@ const CalculadoraSolarPage: React.FC = () => {
                 {results && (
                      <AnimateOnScroll>
                         <div className="mt-12">
-                            <h2 className="text-2xl font-bold text-center text-slate-800 mb-2">Aquí tienes 3 estimaciones para tu proyecto</h2>
-                            <p className="text-center text-slate-600 mb-8">Basado en un consumo diario de <strong className="text-slate-800">{results.dailyConsumption} kWh</strong>. Haz clic en una opción para seleccionarla.</p>
+                            <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">Aquí tienes 3 estimaciones para tu proyecto</h2>
+                            <p className="text-center text-slate-600 dark:text-slate-400 mb-8">Basado en un consumo diario de <strong className="text-slate-800 dark:text-slate-200">{results.dailyConsumption} kWh</strong>. Haz clic en una opción para seleccionarla.</p>
                             
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                                 <EstimateCard 
@@ -98,8 +99,8 @@ const CalculadoraSolarPage: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="text-center mt-12 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg max-w-4xl mx-auto">
-                                <p className="text-sm text-yellow-800">
+                            <div className="text-center mt-12 p-4 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-500 rounded-r-lg max-w-4xl mx-auto">
+                                <p className="text-sm text-yellow-800 dark:text-yellow-200">
                                     <strong>Importante:</strong> Este es un cálculo aproximado. El costo final puede variar según la marca de los equipos, las condiciones de instalación y otros factores.
                                 </p>
                             </div>

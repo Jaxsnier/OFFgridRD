@@ -38,7 +38,15 @@ export const useAnimateOnScroll = (options: IntersectionObserverInit = { thresho
 /**
  * A wrapper component to apply slide-in animations on scroll.
  */
-export const AnimateOnScroll = ({ children, direction = 'up', delay = 0 }: { children: React.ReactNode, direction?: 'up' | 'left' | 'right', delay?: number }) => {
+// Fix: Define props with a type alias for better readability and to resolve TS inference issues.
+type AnimateOnScrollProps = {
+    children: React.ReactNode;
+    direction?: 'up' | 'left' | 'right';
+    delay?: number;
+};
+
+// Fix: Explicitly type AnimateOnScroll as a React.FC to ensure correct handling of React props like `key` and to resolve cascading type errors.
+export const AnimateOnScroll: React.FC<AnimateOnScrollProps> = ({ children, direction = 'up', delay = 0 }) => {
     const [ref, isVisible] = useAnimateOnScroll();
     
     const directionClasses = {

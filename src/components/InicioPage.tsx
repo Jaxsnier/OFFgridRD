@@ -7,7 +7,7 @@ import ContactSection from './inicio/ContactSection';
 
 const InicioPage: React.FC = () => {
     return (
-        <div className="w-full h-full overflow-y-auto bg-[#F9F6F4] font-['Poppins',_sans-serif]">
+        <div className="w-full h-full overflow-y-auto bg-white dark:bg-slate-900 font-['Poppins',_sans-serif]">
             <main>
                 <HeroSection />
                 <BenefitsSection />

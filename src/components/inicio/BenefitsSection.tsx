@@ -4,7 +4,7 @@ import BenefitCard from './shared/BenefitCard';
 
 const BenefitsSection: React.FC = () => {
     return (
-        <section className="py-24 bg-white">
+        <section className="py-24 bg-slate-50 dark:bg-slate-800">
             <div className="container mx-auto px-6">
                 <div className="grid md:grid-cols-3 gap-8">
                     <AnimateOnScroll direction="left">

@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 export const useTheme = () => {
     const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
         const storedTheme = localStorage.getItem('theme');
+        // Si hay un tema guardado en localStorage, úsalo.
         if (storedTheme) {
             return storedTheme === 'dark';
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Si no, inicia en modo claro (isDarkMode = false) por defecto.
+        return false;
     });
 
     useEffect(() => {

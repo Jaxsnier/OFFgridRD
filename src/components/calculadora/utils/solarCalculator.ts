@@ -45,13 +45,13 @@ export const generateEstimates = (dailyConsumption: number): CalculationResults 
     // Constants
     const PEAK_SUN_HOURS = 4;
     const PANEL_WATTAGE_KW = 0.550;
-    const COST_PER_WATT_GRIDTIE_USD = 1.10;
-    const COST_PER_WATT_HYBRID_USD = 1.25;
-    const COST_PER_WATT_OFFGRID_USD = 1.40;
-    const COST_PER_KWH_BATTERY_USD = 450;
+    const COST_PER_WATT_GRIDTIE_USD = 0.99;
+    const COST_PER_WATT_HYBRID_USD = 1.05;
+    const COST_PER_WATT_OFFGRID_USD = 1.20;
+    const COST_PER_KWH_BATTERY_USD = 200;
     const OFFGRID_SYSTEM_OVERSIZE_FACTOR = 1.4;
     const OFFGRID_AUTONOMY_DAYS = 1; // Set to one day of autonomy
-    const HYBRID_AUTONOMY_DAYS = 1;
+    const HYBRID_AUTONOMY_DAYS = 0.5;
 
     // 1. Grid-Tie Calculation
     let requiredGridTieSize = dailyConsumption / PEAK_SUN_HOURS;

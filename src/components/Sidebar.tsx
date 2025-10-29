@@ -50,6 +50,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     Calculadora Solar
                                 </a>
                             </li>
+                             <li>
+                                <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('instalacion_personalizada'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'instalacion_personalizada' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                                    Instalación Personalizada
+                                </a>
+                            </li>
                             <li>
                                 <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('potenciales'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'potenciales' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                                     Base De Datos

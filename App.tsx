@@ -47,6 +47,21 @@ const App: React.FC = () => {
     // Google Maps API
     const { scriptLoaded, isLoadingScript, apiKeyError, loadScript } = useGoogleMapsAPI(undefined, handleGoogleMapsKeyValid);
     
+    // Track previous user to detect logout
+    const prevUserRef = useRef(auth.user);
+
+    // Effect: Handle Logout (Clear Key)
+    useEffect(() => {
+        // Detect logout: User existed before, but now is null
+        if (prevUserRef.current && !auth.user) {
+            if (scriptLoaded) {
+                console.log('Usuario cerró sesión, limpiando API Key.');
+                loadScript(''); // Unload script and clear key
+            }
+        }
+        prevUserRef.current = auth.user;
+    }, [auth.user, scriptLoaded, loadScript]);
+    
     // Effect: Check for saved API Key in Firestore when user logs in
     useEffect(() => {
         const fetchUserKey = async () => {
@@ -90,14 +105,7 @@ const App: React.FC = () => {
 
     const handleNavClick = (view: View) => {
         setActiveView(view);
-        if (view === 'potenciales' && !scriptLoaded) {
-            // First try: Check local storage (legacy behavior)
-            const savedApiKey = localStorage.getItem('googleMapsApiKey');
-            if (savedApiKey) {
-                loadScript(savedApiKey);
-            }
-            // Note: Firestore check happens automatically via the useEffect when auth.user changes or is present
-        }
+        // No longer checking localStorage. Key persistence is handled solely by Auth/Firestore or current session state.
     };
 
     return (

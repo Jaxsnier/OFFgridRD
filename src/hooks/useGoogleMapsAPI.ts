@@ -37,7 +37,9 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             if (authFailedRef.current) return;
             authFailedRef.current = true;
             
+            // Clean up any potentially stale key from legacy localStorage usage
             localStorage.removeItem('googleMapsApiKey');
+            
             setApiKeyError(errorMessage);
             setApiKey('');
             setIsLoadingScript(false);
@@ -50,7 +52,10 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             
             try {
                 new (window as any).google.maps.Geocoder();
-                localStorage.setItem('googleMapsApiKey', apiKey);
+                
+                // Removed localStorage.setItem to prevent saving key for non-logged users.
+                // Persistence is now handled solely by Firestore in App.tsx for logged-in users.
+                
                 setScriptLoaded(true);
                 setIsLoadingScript(false);
                 setApiKeyError('');

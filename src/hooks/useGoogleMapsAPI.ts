@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-export const useGoogleMapsAPI = (initialKey?: string) => {
+export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string) => void) => {
     const [apiKey, setApiKey] = useState<string>(initialKey || '');
     const [apiKeyError, setApiKeyError] = useState<string>('');
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [isLoadingScript, setIsLoadingScript] = useState<boolean>(false);
     
     const authFailedRef = useRef(false);
+    // Ref to keep track of the latest callback without triggering effect re-runs
+    const onValidKeyRef = useRef(onValidKey);
+
+    useEffect(() => {
+        onValidKeyRef.current = onValidKey;
+    }, [onValidKey]);
 
     const loadScript = useCallback((key: string) => {
         setScriptLoaded(false);
@@ -48,6 +54,11 @@ export const useGoogleMapsAPI = (initialKey?: string) => {
                 setScriptLoaded(true);
                 setIsLoadingScript(false);
                 setApiKeyError('');
+                
+                // Trigger the callback if provided
+                if (onValidKeyRef.current) {
+                    onValidKeyRef.current(apiKey);
+                }
             } catch (error) {
                 handleAuthError("La clave de API es inválida o la API no pudo inicializarse.");
             }

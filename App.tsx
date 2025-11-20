@@ -1,8 +1,10 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { db } from './src/firebaseConfig';
 
 import { useTheme } from './src/hooks/useTheme';
 import { useGoogleMapsAPI } from './src/hooks/useGoogleMapsAPI';
 import { useClientDataManager } from './src/hooks/useClientDataManager';
+import { useAuth } from './src/hooks/useAuth';
 
 import ApiKeyGate from './src/components/ApiKeyGate';
 import Header from './src/components/Header';
@@ -25,9 +27,49 @@ const App: React.FC = () => {
     const [activeView, setActiveView] = useState<View>('inicio');
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     
-    // Google Maps API
-    const { scriptLoaded, isLoadingScript, apiKeyError, loadScript } = useGoogleMapsAPI();
+    // Auth
+    const auth = useAuth();
     
+    // Callback to save the API key to Firestore when it's confirmed valid
+    const handleGoogleMapsKeyValid = useCallback(async (validKey: string) => {
+        if (auth.user) {
+            try {
+                const userRef = db.collection('users').doc(auth.user.uid);
+                await userRef.set({ googleMapsApiKey: validKey }, { merge: true });
+                console.log('API Key guardada en el perfil del usuario.');
+            } catch (error) {
+                console.error('Error al guardar la API Key en Firestore:', error);
+            }
+        }
+    }, [auth.user]);
+
+    // Google Maps API
+    const { scriptLoaded, isLoadingScript, apiKeyError, loadScript } = useGoogleMapsAPI(undefined, handleGoogleMapsKeyValid);
+    
+    // Effect: Check for saved API Key in Firestore when user logs in
+    useEffect(() => {
+        const fetchUserKey = async () => {
+            if (auth.user && !scriptLoaded) {
+                try {
+                    const userRef = db.collection('users').doc(auth.user.uid);
+                    const userSnap = await userRef.get();
+                    
+                    if (userSnap.exists) {
+                        const userData = userSnap.data();
+                        if (userData && userData.googleMapsApiKey) {
+                            // Load the script with the saved key
+                            loadScript(userData.googleMapsApiKey);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error al recuperar la API Key del usuario:", error);
+                }
+            }
+        };
+
+        fetchUserKey();
+    }, [auth.user, loadScript, scriptLoaded]);
+
     // Client Data Management
     const clientData = useClientDataManager(scriptLoaded);
 
@@ -48,10 +90,12 @@ const App: React.FC = () => {
     const handleNavClick = (view: View) => {
         setActiveView(view);
         if (view === 'potenciales' && !scriptLoaded) {
+            // First try: Check local storage (legacy behavior)
             const savedApiKey = localStorage.getItem('googleMapsApiKey');
             if (savedApiKey) {
                 loadScript(savedApiKey);
             }
+            // Note: Firestore check happens automatically via the useEffect when auth.user changes or is present
         }
     };
 
@@ -63,6 +107,7 @@ const App: React.FC = () => {
                     onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} 
                     isDarkMode={isDarkMode}
                     toggleDarkMode={toggleDarkMode}
+                    user={auth.user}
                 />
                 
                 <Sidebar
@@ -74,6 +119,7 @@ const App: React.FC = () => {
                     isSettingCenter={isSettingCenter}
                     onSetCenterClick={() => { setIsSettingCenter(true); setIsSidebarOpen(false); }}
                     clientDataManager={clientData}
+                    auth={auth}
                 />
 
                 <main className="flex-grow min-h-0">

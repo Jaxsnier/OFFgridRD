@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { db } from './src/firebaseConfig';
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import { useTheme } from './src/hooks/useTheme';
 import { useGoogleMapsAPI } from './src/hooks/useGoogleMapsAPI';
@@ -34,8 +35,8 @@ const App: React.FC = () => {
     const handleGoogleMapsKeyValid = useCallback(async (validKey: string) => {
         if (auth.user) {
             try {
-                const userRef = db.collection('users').doc(auth.user.uid);
-                await userRef.set({ googleMapsApiKey: validKey }, { merge: true });
+                const userRef = doc(db, 'users', auth.user.uid);
+                await setDoc(userRef, { googleMapsApiKey: validKey }, { merge: true });
                 console.log('API Key guardada en el perfil del usuario.');
             } catch (error) {
                 console.error('Error al guardar la API Key en Firestore:', error);
@@ -51,10 +52,10 @@ const App: React.FC = () => {
         const fetchUserKey = async () => {
             if (auth.user && !scriptLoaded) {
                 try {
-                    const userRef = db.collection('users').doc(auth.user.uid);
-                    const userSnap = await userRef.get();
+                    const userRef = doc(db, 'users', auth.user.uid);
+                    const userSnap = await getDoc(userRef);
                     
-                    if (userSnap.exists) {
+                    if (userSnap.exists()) {
                         const userData = userSnap.data();
                         if (userData && userData.googleMapsApiKey) {
                             // Load the script with the saved key

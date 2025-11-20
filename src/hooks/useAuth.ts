@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
-import firebase from 'firebase/app';
-import 'firebase/auth';
+import { 
+    User, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged,
+    sendEmailVerification,
+    reload
+} from "firebase/auth";
 
 export const useAuth = () => {
-    const [user, setUser] = useState<firebase.User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setLoading(false);
         });
@@ -17,7 +24,7 @@ export const useAuth = () => {
 
     const login = async (email: string, password: string) => {
         try {
-            await auth.signInWithEmailAndPassword(email, password);
+            await signInWithEmailAndPassword(auth, email, password);
             return { success: true };
         } catch (error: any) {
             console.error("Error al iniciar sesión:", error);
@@ -33,11 +40,11 @@ export const useAuth = () => {
 
     const register = async (email: string, password: string) => {
         try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             
             // Send verification email immediately after registration
             if (userCredential.user) {
-                await userCredential.user.sendEmailVerification();
+                await sendEmailVerification(userCredential.user);
             }
             
             return { success: true };
@@ -57,7 +64,7 @@ export const useAuth = () => {
 
     const logout = async () => {
         try {
-            await auth.signOut();
+            await signOut(auth);
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
         }
@@ -66,7 +73,7 @@ export const useAuth = () => {
     const resendVerificationEmail = async () => {
         if (auth.currentUser && !auth.currentUser.emailVerified) {
             try {
-                await auth.currentUser.sendEmailVerification();
+                await sendEmailVerification(auth.currentUser);
                 return { success: true };
             } catch (error: any) {
                 return { success: false, error: error.message };
@@ -77,17 +84,9 @@ export const useAuth = () => {
 
     const reloadUser = async () => {
         if (auth.currentUser) {
-            await auth.currentUser.reload();
-            // Force state update by creating a shallow copy or resetting
-            // Note: user state might update automatically via onAuthStateChanged or we might need to manually trigger if strict equality check prevents update
-            if (auth.currentUser) {
-                 // We spread to create a new reference, though firebase user objects are mutable.
-                 // Ideally onAuthStateChanged handles this, but force update helps in UI
-                 // Since we don't have a clone method easily available for User, we rely on React state update.
-                 // However, setUser({...auth.currentUser} as any) is risky.
-                 // Let's just rely on fetching current user.
-                 setUser(auth.currentUser);
-            }
+            await reload(auth.currentUser);
+            // Force state update by setting user to current copy
+            setUser({ ...auth.currentUser } as User);
             return auth.currentUser;
         }
         return null;

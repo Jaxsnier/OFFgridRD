@@ -1,12 +1,11 @@
 import React from 'react';
-import firebase from 'firebase/app';
-import 'firebase/auth';
+import { User } from 'firebase/auth';
 
 interface HeaderProps {
     onMenuClick: () => void;
     isDarkMode: boolean;
     toggleDarkMode: () => void;
-    user: firebase.User | null;
+    user: User | null;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, isDarkMode, toggleDarkMode, user }) => {

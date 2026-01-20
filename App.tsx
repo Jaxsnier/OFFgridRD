@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { db } from './src/firebaseConfig';
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -27,6 +28,7 @@ const App: React.FC = () => {
 
     const [activeView, setActiveView] = useState<View>('inicio');
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+    const [isCheckingDbKey, setIsCheckingDbKey] = useState<boolean>(false);
     
     // Auth
     const auth = useAuth();
@@ -65,7 +67,8 @@ const App: React.FC = () => {
     // Effect: Check for saved API Key in Firestore when user logs in
     useEffect(() => {
         const fetchUserKey = async () => {
-            if (auth.user && !scriptLoaded) {
+            if (auth.user && !scriptLoaded && !isCheckingDbKey && !apiKeyError) {
+                setIsCheckingDbKey(true);
                 try {
                     const userRef = doc(db, 'users', auth.user.uid);
                     const userSnap = await getDoc(userRef);
@@ -79,12 +82,14 @@ const App: React.FC = () => {
                     }
                 } catch (error) {
                     console.error("Error al recuperar la API Key del usuario:", error);
+                } finally {
+                    setIsCheckingDbKey(false);
                 }
             }
         };
 
         fetchUserKey();
-    }, [auth.user, loadScript, scriptLoaded]);
+    }, [auth.user, loadScript, scriptLoaded, isCheckingDbKey, apiKeyError]);
 
     // Client Data Management
     const clientData = useClientDataManager(scriptLoaded);
@@ -105,7 +110,6 @@ const App: React.FC = () => {
 
     const handleNavClick = (view: View) => {
         setActiveView(view);
-        // No longer checking localStorage. Key persistence is handled solely by Auth/Firestore or current session state.
     };
 
     return (
@@ -154,7 +158,11 @@ const App: React.FC = () => {
                                     infoWindowRef={infoWindowRef}
                                 />
                             ) : (
-                                <ApiKeyGate onSubmit={handleKeySubmit} error={apiKeyError} isLoading={isLoadingScript} />
+                                <ApiKeyGate 
+                                    onSubmit={handleKeySubmit} 
+                                    error={apiKeyError} 
+                                    isLoading={isLoadingScript || isCheckingDbKey} 
+                                />
                             )}
                         </>
                     )}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Client } from '../types';
 
 declare var XLSX: any;
@@ -15,9 +15,10 @@ export const useClientDataManager = (scriptLoaded: boolean) => {
     const [isProcessingFile, setIsProcessingFile] = useState<boolean>(false);
     const [fileError, setFileError] = useState<string>('');
     
-    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [selectedClientId, setselectedClientId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     
+    // Fix: Added React import at the top of the file to provide the 'React' namespace for React.ChangeEvent.
     const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -179,7 +180,7 @@ export const useClientDataManager = (scriptLoaded: boolean) => {
     }, [finalFilteredClients, currentPage]);
 
     const handleClientSelect = (client: Client | null) => {
-        setSelectedClientId(client ? client.id : null);
+        setselectedClientId(client ? client.id : null);
     };
 
     return {

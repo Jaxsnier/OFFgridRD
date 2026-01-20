@@ -29,6 +29,7 @@ const App: React.FC = () => {
     const [activeView, setActiveView] = useState<View>('inicio');
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [isCheckingDbKey, setIsCheckingDbKey] = useState<boolean>(false);
+    const [dbApiKey, setDbApiKey] = useState<string>('');
     
     // Auth
     const auth = useAuth();
@@ -56,18 +57,20 @@ const App: React.FC = () => {
     useEffect(() => {
         // Detect logout: User existed before, but now is null
         if (prevUserRef.current && !auth.user) {
-            if (scriptLoaded) {
+            setDbApiKey('');
+            if (scriptLoaded || isLoadingScript) {
                 console.log('Usuario cerró sesión, limpiando API Key.');
                 loadScript(''); // Unload script and clear key
             }
         }
         prevUserRef.current = auth.user;
-    }, [auth.user, scriptLoaded, loadScript]);
+    }, [auth.user, scriptLoaded, isLoadingScript, loadScript]);
     
     // Effect: Check for saved API Key in Firestore when user logs in
     useEffect(() => {
         const fetchUserKey = async () => {
-            if (auth.user && !scriptLoaded && !isCheckingDbKey && !apiKeyError) {
+            // Only fetch if we have a user and no key is currently loaded/being loaded
+            if (auth.user && !scriptLoaded && !isCheckingDbKey && !dbApiKey) {
                 setIsCheckingDbKey(true);
                 try {
                     const userRef = doc(db, 'users', auth.user.uid);
@@ -76,8 +79,8 @@ const App: React.FC = () => {
                     if (userSnap.exists()) {
                         const userData = userSnap.data();
                         if (userData && userData.googleMapsApiKey) {
-                            // Load the script with the saved key
-                            loadScript(userData.googleMapsApiKey);
+                            // Update: Just set the DB key state, let the user trigger the load
+                            setDbApiKey(userData.googleMapsApiKey);
                         }
                     }
                 } catch (error) {
@@ -89,7 +92,7 @@ const App: React.FC = () => {
         };
 
         fetchUserKey();
-    }, [auth.user, loadScript, scriptLoaded, isCheckingDbKey, apiKeyError]);
+    }, [auth.user, scriptLoaded, isCheckingDbKey, dbApiKey]);
 
     // Client Data Management
     const clientData = useClientDataManager(scriptLoaded);
@@ -162,6 +165,7 @@ const App: React.FC = () => {
                                     onSubmit={handleKeySubmit} 
                                     error={apiKeyError} 
                                     isLoading={isLoadingScript || isCheckingDbKey} 
+                                    initialValue={dbApiKey}
                                 />
                             )}
                         </>

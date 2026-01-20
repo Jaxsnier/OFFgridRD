@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import type { View } from '../../App';
 import { useClientDataManager } from '../hooks/useClientDataManager';
 import PotencialesControls from './sidebar/PotencialesControls';
 import { useAuth } from '../hooks/useAuth';
 import LoginModal from './LoginModal';
+import { APP_VERSION } from '../version';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -64,7 +66,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {/* Header del Sidebar */}
                     <div className="p-4 border-b dark:border-slate-700">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white whitespace-nowrap">Menú</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white whitespace-nowrap">Menú</h2>
+                                <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-600">
+                                    {APP_VERSION}
+                                </span>
+                            </div>
                              <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700" aria-label="Cerrar menú">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

@@ -9,26 +9,45 @@ interface ApiKeyGateProps {
 }
 
 const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading, initialValue = '' }) => {
-    const [inputValue, setInputValue] = useState(initialValue);
-
-    // Update internal state if initialValue changes (e.g. after DB fetch)
-    useEffect(() => {
-        if (initialValue) {
-            setInputValue(initialValue);
-        }
-    }, [initialValue]);
+    const [inputValue, setInputValue] = useState('');
+    const [localError, setLocalError] = useState('');
 
     const handleKeySubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (inputValue.trim()) {
-            onSubmit(inputValue.trim());
+        setLocalError('');
+
+        const val = inputValue.trim();
+        const fallback = initialValue?.trim();
+
+        if (val) {
+            // User typed something, use it
+            onSubmit(val);
+        } else if (fallback) {
+            // Field is empty, but we have a key in the database
+            setInputValue(fallback);
+            onSubmit(fallback);
+        } else {
+            // Both are empty
+            setLocalError('Por favor, ingresa una clave o asegúrate de tener una guardada en tu perfil.');
         }
     };
+
+    const handleLoadFromDb = () => {
+        if (initialValue) {
+            setInputValue(initialValue);
+            setLocalError('');
+        }
+    };
+
+    // Clear local error when global error changes or input changes
+    useEffect(() => {
+        if (error) setLocalError('');
+    }, [error]);
 
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full bg-slate-50 dark:bg-slate-900">
-                <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-slate-800 rounded-lg shadow-md text-center">
+                <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-slate-800 rounded-lg shadow-md text-center animate-[fadeIn_0.5s_ease-out]">
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Procesando...</h2>
                     <p className="text-slate-600 dark:text-slate-400">Validando la clave de API y preparando el entorno. Por favor, espere.</p>
                     <div className="relative mt-4">
@@ -58,19 +77,32 @@ const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading, ini
                 </div>
 
                 <form onSubmit={handleKeySubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="apiKey" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Google Maps API Key
-                        </label>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <label htmlFor="apiKey" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                Google Maps API Key
+                            </label>
+                            {initialValue && (
+                                <button
+                                    type="button"
+                                    onClick={handleLoadFromDb}
+                                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                                    </svg>
+                                    Cargar de mi perfil
+                                </button>
+                            )}
+                        </div>
                         <input
                             id="apiKey"
                             name="apiKey"
-                            type="password"
+                            type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            required
                             className={`w-full px-4 py-3 border rounded-xl shadow-sm outline-none transition-all dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-500 ${
-                                error 
+                                (error || localError)
                                     ? 'border-red-300 focus:ring-2 focus:ring-red-500/20 focus:border-red-500' 
                                     : 'border-slate-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:border-slate-600'
                             }`}
@@ -78,12 +110,12 @@ const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading, ini
                         />
                     </div>
                     
-                    {error && (
+                    {(error || localError) && (
                         <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium animate-[fadeIn_0.3s_ease-out]">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
-                            {error}
+                            {error || localError}
                         </div>
                     )}
 
@@ -92,7 +124,7 @@ const ApiKeyGate: React.FC<ApiKeyGateProps> = ({ onSubmit, error, isLoading, ini
                         className="w-full flex justify-center items-center gap-2 px-6 py-3.5 font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg hover:shadow-blue-500/30"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Cargar Mapa
                     </button>

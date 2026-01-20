@@ -28,7 +28,6 @@ const App: React.FC = () => {
 
     const [activeView, setActiveView] = useState<View>('inicio');
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-    const [isCheckingDbKey, setIsCheckingDbKey] = useState<boolean>(false);
     const [dbApiKey, setDbApiKey] = useState<string>('');
     
     // Auth
@@ -40,7 +39,7 @@ const App: React.FC = () => {
             try {
                 const userRef = doc(db, 'users', auth.user.uid);
                 await setDoc(userRef, { googleMapsApiKey: validKey }, { merge: true });
-                console.log('API Key validada y guardada en Firestore.');
+                console.log('API Key validada y guardada en el perfil del usuario.');
             } catch (error) {
                 console.error('Error al guardar la API Key en Firestore:', error);
             }
@@ -56,21 +55,20 @@ const App: React.FC = () => {
     // Effect: Handle Logout (Clear Key and Unload)
     useEffect(() => {
         if (prevUserRef.current && !auth.user) {
-            console.log('Detectado cierre de sesión. Limpiando datos sensibles.');
+            console.log('Usuario cerró sesión. Limpiando claves.');
             setDbApiKey('');
-            loadScript(''); // This safely unloads everything
+            loadScript(''); 
         }
         prevUserRef.current = auth.user;
     }, [auth.user, loadScript]);
     
-    // Effect: Pre-fill API Key from Firestore when user logs in
+    // Effect: Background fetch of API Key from Firestore
     useEffect(() => {
         let isMounted = true;
         
         const fetchUserKey = async () => {
-            // Only fetch if: User exists, Map not loaded, not already checking, and field is empty
-            if (auth.user && !scriptLoaded && !isCheckingDbKey && !dbApiKey) {
-                setIsCheckingDbKey(true);
+            // Only fetch if user logged in, map not loaded, and we haven't set a dbApiKey yet
+            if (auth.user && !scriptLoaded && !dbApiKey) {
                 try {
                     const userRef = doc(db, 'users', auth.user.uid);
                     const userSnap = await getDoc(userRef);
@@ -78,21 +76,19 @@ const App: React.FC = () => {
                     if (isMounted && userSnap.exists()) {
                         const userData = userSnap.data();
                         if (userData && userData.googleMapsApiKey) {
-                            console.log('Clave de API encontrada en Firestore. Pre-llenando campo.');
+                            console.log('Clave recuperada de Firestore (pre-llenado).');
                             setDbApiKey(userData.googleMapsApiKey);
                         }
                     }
                 } catch (error) {
-                    console.error("Error al recuperar la API Key de Firestore:", error);
-                } finally {
-                    if (isMounted) setIsCheckingDbKey(false);
+                    console.error("Error silencioso al recuperar clave de Firestore:", error);
                 }
             }
         };
 
         fetchUserKey();
         return () => { isMounted = false; };
-    }, [auth.user, scriptLoaded, isCheckingDbKey, dbApiKey]);
+    }, [auth.user, scriptLoaded, dbApiKey]);
 
     // Client Data Management
     const clientData = useClientDataManager(scriptLoaded);
@@ -108,7 +104,6 @@ const App: React.FC = () => {
     }, []);
 
     const handleKeySubmit = (submittedKey: string) => {
-        console.log('Iniciando carga manual de mapa...');
         loadScript(submittedKey);
     };
 
@@ -165,7 +160,7 @@ const App: React.FC = () => {
                                 <ApiKeyGate 
                                     onSubmit={handleKeySubmit} 
                                     error={apiKeyError} 
-                                    isLoading={isLoadingScript || isCheckingDbKey} 
+                                    isLoading={isLoadingScript} 
                                     initialValue={dbApiKey}
                                 />
                             )}

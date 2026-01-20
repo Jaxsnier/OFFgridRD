@@ -23,17 +23,19 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             setApiKeyError('');
             return;
         }
+        
+        // Manual trigger
         setApiKey(key.trim());
         setApiKeyError('');
         setScriptLoaded(false);
-        setIsLoadingScript(true);
-        // Increment trigger to force useEffect even if apiKey is the same
+        setIsLoadingScript(true); // Start loading UI
         setLoadTrigger(prev => prev + 1);
     }, []);
 
     useEffect(() => {
-        // Only run if there is a key and a trigger has been fired
-        if (!apiKey || loadTrigger === 0) {
+        // STRICT GUARD: If no trigger has been fired, do NOT start the effect logic.
+        // This ensures pre-filling doesn't start the loading process.
+        if (loadTrigger === 0 || !apiKey) {
             return;
         }
 
@@ -44,24 +46,18 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
         const cleanupGoogleAPI = () => {
             const script = document.getElementById('google-maps-script');
             if (script) script.remove();
-            
-            // Clean up global callbacks
             delete (window as any).initMapSuccess;
             delete (window as any).gm_authFailure;
-            
-            // Note: window.google usually persists, but we can't fully delete it safely
-            // without affecting other possible scripts. We just stop the script loading.
         };
 
-        // Safety timeout to prevent infinite spinner if script fails to report back
         const timeoutId = setTimeout(() => {
             if (isLoadingScript && !scriptLoaded && !apiKeyError) {
                 setIsLoadingScript(false);
-                setApiKeyError("Tiempo de espera agotado. Verifica tu conexión o la clave de API.");
+                setApiKeyError("La conexión con Google Maps ha tardado demasiado. Intenta de nuevo.");
             }
-        }, 12000);
+        }, 15000);
 
-        const handleAuthError = (errorMessage = "La clave de API es incorrecta o no está autorizada.") => {
+        const handleAuthError = (errorMessage = "La clave de API es incorrecta.") => {
             if (authFailedRef.current) return;
             authFailedRef.current = true;
             
@@ -69,7 +65,6 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             setApiKeyError(errorMessage);
             setIsLoadingScript(false);
             setScriptLoaded(false);
-            // Important: We DON'T clear apiKey state here to avoid re-triggering this effect
             cleanupGoogleAPI();
         };
 
@@ -79,10 +74,9 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             clearTimeout(timeoutId);
             try {
                 if (!(window as any).google || !(window as any).google.maps) {
-                    throw new Error("Google Maps object not found");
+                    throw new Error("API object not found");
                 }
                 
-                // Minimal check to ensure Geocoder (part of basic maps) is available
                 new (window as any).google.maps.Geocoder();
                 
                 setScriptLoaded(true);
@@ -107,7 +101,7 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
         script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=geometry&callback=initMapSuccess`;
         script.async = true;
         script.defer = true;
-        script.onerror = () => handleAuthError("No se pudo cargar el recurso de Google Maps. Verifica tu conexión.");
+        script.onerror = () => handleAuthError("Error de red al cargar Google Maps.");
         
         document.head.appendChild(script);
 
@@ -115,7 +109,7 @@ export const useGoogleMapsAPI = (initialKey?: string, onValidKey?: (key: string)
             clearTimeout(timeoutId);
             cleanupGoogleAPI();
         };
-    }, [apiKey, loadTrigger]); // Depends on trigger to allow retrying the same key
+    }, [apiKey, loadTrigger]);
     
     return {
         scriptLoaded,

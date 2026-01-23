@@ -11,7 +11,7 @@ interface Props {
 const Step4_AdditionalServices: React.FC<Props> = ({ permitsSelected, onSelect, disabled }) => {
     return (
         <section>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Paso 4: Servicios Adicionales</h2>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Servicios Adicionales</h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6">¿Quieres formalizar tu instalación con la distribuidora eléctrica? Te ayudamos con todo el papeleo.</p>
             <div className="grid sm:grid-cols-2 gap-6">
                 <OptionCard

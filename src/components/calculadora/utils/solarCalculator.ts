@@ -1,129 +1,99 @@
-import { CalculationResults, SystemEstimate } from '../types';
+import { FinancialAnalysis, ChartDataPoint } from '../types';
 
-export const calculateConsumption = (bill: number): number => {
-    const TIER1_RATE = 5.97;
-    const TIER2_RATE = 8.51;
-    const TIER3_RATE = 13.83;
-    const FLAT_RATE_KWH_THRESHOLD = 700;
-    const TIER1_KWH_LIMIT = 200;
-    const TIER2_KWH_LIMIT = 300;
+/**
+ * Tarifas Eléctricas RD (BTS1):
+ * 0-200 kWh: 5.97
+ * 201-300 kWh: 8.51
+ * 301-700 kWh: 13.48
+ * > 700 kWh: Todos a 13.48
+ */
+const T1_LIMIT = 200;
+const T1_PRICE = 5.97;
+const T2_LIMIT = 300;
+const T2_PRICE = 8.51;
+const T3_LIMIT = 700;
+const T3_PRICE = 13.48;
 
-    const tier1MaxCost = TIER1_KWH_LIMIT * TIER1_RATE;
-    const tier2MaxCost = (TIER2_KWH_LIMIT - TIER1_KWH_LIMIT) * TIER2_RATE;
-    const tier1And2MaxCost = tier1MaxCost + tier2MaxCost;
+const PEAK_SUN_HOURS = 4.5;
+const PANEL_WATTAGE_W = 600;
+const AVG_SYSTEM_COST_PER_W_DOP = 65; 
 
-    let monthlyConsumption = 0;
+/**
+ * Calcula el consumo en kWh a partir del monto de la factura en DOP
+ * siguiendo la estructura tarifaria BTS1.
+ */
+const calculateKwhFromBill = (bill: number): number => {
+    const costT1 = T1_LIMIT * T1_PRICE; // 1194.00
+    const costT2 = (T2_LIMIT - T1_LIMIT) * T2_PRICE; // 851.00
+    const costT3_threshold = costT1 + costT2 + (T3_LIMIT - T2_LIMIT) * T3_PRICE; // 7437.00
+    const costCliff = T3_LIMIT * T3_PRICE; // 9436.00
 
-    const consumptionIfFlatRate = bill / TIER3_RATE;
-    if (consumptionIfFlatRate >= FLAT_RATE_KWH_THRESHOLD) {
-        monthlyConsumption = consumptionIfFlatRate;
-    } else {
-        if (bill <= tier1MaxCost) {
-            monthlyConsumption = bill / TIER1_RATE;
-        } else if (bill <= tier1And2MaxCost) {
-            const remainingBill = bill - tier1MaxCost;
-            const kwhInTier2 = remainingBill / TIER2_RATE;
-            monthlyConsumption = TIER1_KWH_LIMIT + kwhInTier2;
-        } else {
-            const remainingBill = bill - tier1And2MaxCost;
-            const kwhInTier3 = remainingBill / TIER3_RATE;
-            monthlyConsumption = TIER2_KWH_LIMIT + kwhInTier3;
-        }
+    // Caso 1: Consumo muy alto (> 700 kWh)
+    // Si la factura es mayor al umbral de 700kWh con tarifa plana
+    if (bill >= costCliff) {
+        return bill / T3_PRICE;
     }
-    return monthlyConsumption;
+
+    // Caso 2: Bloque 301 - 700 kWh
+    if (bill > (costT1 + costT2)) {
+        return T2_LIMIT + (bill - (costT1 + costT2)) / T3_PRICE;
+    }
+
+    // Caso 3: Bloque 201 - 300 kWh
+    if (bill > costT1) {
+        return T1_LIMIT + (bill - costT1) / T2_PRICE;
+    }
+
+    // Caso 4: Bloque 0 - 200 kWh
+    return bill / T1_PRICE;
 };
 
-const getNextInverterSize = (requiredSize: number): number => {
-    const availableSizes = [3, 5, 7, 10, 12];
-    const suitableInverter = availableSizes.find(size => size >= requiredSize);
-    // If requiredSize is larger than any available size, return the largest.
-    return suitableInverter ?? availableSizes[availableSizes.length - 1];
-};
+export const calculateFinancialAnalysis = (monthlyBill: number): FinancialAnalysis => {
+    // 1. Consumption calculations based on RD tiered rates
+    const monthlyConsumptionKwh = calculateKwhFromBill(monthlyBill);
+    const annualSpend = monthlyBill * 12;
+    const spend25Years = annualSpend * 25;
 
+    // 2. System sizing
+    const dailyKwh = monthlyConsumptionKwh / 30;
+    const systemSizekWp = dailyKwh / PEAK_SUN_HOURS;
+    const panelCount = Math.ceil((systemSizekWp * 1000) / PANEL_WATTAGE_W);
+    const finalSystemSizekWp = (panelCount * PANEL_WATTAGE_W) / 1000;
 
-export const generateEstimates = (dailyConsumption: number): CalculationResults => {
-    // Constants
-    const PEAK_SUN_HOURS = 4;
-    const PANEL_WATTAGE_KW = 0.550;
-    const COST_PER_WATT_GRIDTIE_USD = 1.10;
-    const COST_PER_WATT_HYBRID_USD = 1.25;
-    const COST_PER_WATT_OFFGRID_USD = 1.40;
-    const COST_PER_KWH_BATTERY_USD = 450;
-    const OFFGRID_SYSTEM_OVERSIZE_FACTOR = 1.4;
-    const OFFGRID_AUTONOMY_DAYS = 1; // Set to one day of autonomy
-    const HYBRID_AUTONOMY_DAYS = 1;
-
-    // 1. Grid-Tie Calculation
-    let requiredGridTieSize = dailyConsumption / PEAK_SUN_HOURS;
-    if (requiredGridTieSize < 3) {
-        requiredGridTieSize = 3; // Minimum size for grid-tie is 3 kWp
-    }
-    const gridTiePanelCount = Math.ceil(requiredGridTieSize / PANEL_WATTAGE_KW);
-    const gridTieSystemSize = gridTiePanelCount * PANEL_WATTAGE_KW;
-    const gridTieInverterSize = getNextInverterSize(gridTieSystemSize);
-    const gridTieCost = gridTieSystemSize * 1000 * COST_PER_WATT_GRIDTIE_USD;
-
-    const gridTie: SystemEstimate = {
-        title: "Inyección a Red (Grid-Tie)",
-        description: "Ideal para maximizar el ahorro en tu factura eléctrica, inyectando el excedente de energía a la red. No incluye baterías de respaldo.",
-        systemSize: parseFloat(gridTieSystemSize.toFixed(2)),
-        panelCount: gridTiePanelCount,
-        inverterSize: gridTieInverterSize,
-        batterySize: 0,
-        estimatedCost: parseFloat(gridTieCost.toFixed(0)),
-    };
-
-    // 2. Hybrid Calculation
-    const requiredHybridSize = dailyConsumption / PEAK_SUN_HOURS;
-    const hybridPanelCount = Math.ceil(requiredHybridSize / PANEL_WATTAGE_KW);
-    const hybridSystemSize = hybridPanelCount * PANEL_WATTAGE_KW;
-    const hybridInverterSize = getNextInverterSize(hybridSystemSize);
-
-    const requiredHybridBatteryBackup = dailyConsumption * HYBRID_AUTONOMY_DAYS;
-    let finalHybridBatterySize: number;
-    if (requiredHybridBatteryBackup <= 5) {
-        finalHybridBatterySize = 5;
-    } else {
-        finalHybridBatterySize = 10;
-    }
-
-    const hybridCost = (hybridSystemSize * 1000 * COST_PER_WATT_HYBRID_USD) + (finalHybridBatterySize * COST_PER_KWH_BATTERY_USD);
-
-    const hybrid: SystemEstimate = {
-        title: "Híbrido con Respaldo",
-        description: "Combina el ahorro de la inyección a red con la seguridad de un banco de baterías para tener energía durante apagones.",
-        systemSize: parseFloat(hybridSystemSize.toFixed(2)),
-        panelCount: hybridPanelCount,
-        inverterSize: hybridInverterSize,
-        batterySize: finalHybridBatterySize,
-        estimatedCost: parseFloat(hybridCost.toFixed(0)),
-    };
-
-    // 3. Off-Grid Calculation
-    const requiredOffGridSize = (dailyConsumption / PEAK_SUN_HOURS) * OFFGRID_SYSTEM_OVERSIZE_FACTOR;
-    const offGridPanelCount = Math.ceil(requiredOffGridSize / PANEL_WATTAGE_KW);
-    const offGridSystemSize = offGridPanelCount * PANEL_WATTAGE_KW;
-    const offGridInverterSize = getNextInverterSize(offGridSystemSize);
+    // 3. Investment and ROI
+    const estimatedInvestment = finalSystemSizekWp * 1000 * AVG_SYSTEM_COST_PER_W_DOP;
+    const annualSavings = annualSpend; 
     
-    const requiredOffGridBattery = dailyConsumption * OFFGRID_AUTONOMY_DAYS;
-    const finalOffGridBatterySize = Math.ceil(requiredOffGridBattery / 5) * 5;
-
-    const offGridCost = (offGridSystemSize * 1000 * COST_PER_WATT_OFFGRID_USD) + (finalOffGridBatterySize * COST_PER_KWH_BATTERY_USD);
-
-    const offGrid: SystemEstimate = {
-        title: "Sistema Aislado (Off-Grid)",
-        description: "Independencia total de la red eléctrica. Diseñado para quienes buscan autonomía completa, con baterías para un día de respaldo.",
-        systemSize: parseFloat(offGridSystemSize.toFixed(2)),
-        panelCount: offGridPanelCount,
-        inverterSize: offGridInverterSize,
-        batterySize: finalOffGridBatterySize,
-        estimatedCost: parseFloat(offGridCost.toFixed(0)),
-    };
+    let roiYears = estimatedInvestment / annualSavings;
     
+    // Realistic boundaries
+    if (roiYears < 2) roiYears = 2;
+    if (roiYears > 6) roiYears = 6;
+
+    const totalProfit25Years = spend25Years - estimatedInvestment;
+
     return {
-        dailyConsumption: parseFloat(dailyConsumption.toFixed(2)),
-        gridTie,
-        hybrid,
-        offGrid,
+        monthlyBill,
+        annualSpend,
+        spend25Years,
+        systemSizekWp: parseFloat(finalSystemSizekWp.toFixed(2)),
+        panelCount,
+        estimatedInvestment: Math.round(estimatedInvestment),
+        annualSavings,
+        roiYears: parseFloat(roiYears.toFixed(1)),
+        totalProfit25Years: Math.round(totalProfit25Years),
+        monthlyConsumptionKwh: Math.round(monthlyConsumptionKwh)
     };
+};
+
+export const generateChartData = (analysis: FinancialAnalysis): ChartDataPoint[] => {
+    const data: ChartDataPoint[] = [];
+    for (let year = 1; year <= 15; year++) {
+        data.push({
+            year,
+            costWithoutSolar: analysis.annualSpend * year,
+            costWithSolar: analysis.estimatedInvestment 
+        });
+    }
+    return data;
 };

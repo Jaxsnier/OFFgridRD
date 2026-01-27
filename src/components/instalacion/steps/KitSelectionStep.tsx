@@ -22,7 +22,7 @@ const KitSelectionStep: React.FC<KitSelectionStepProps> = ({ selectedKitId, onSe
                         }`}
                     >
                         {selectedKitId === kit.id && (
-                            <div className="absolute -top-3 -right-3 bg-blue-500 text-white p-1 rounded-full shadow-lg">
+                            <div className="absolute -top-3 -right-3 bg-blue-500 text-white p-1 rounded-full shadow-lg z-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                 </svg>
@@ -32,9 +32,14 @@ const KitSelectionStep: React.FC<KitSelectionStepProps> = ({ selectedKitId, onSe
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{kit.name}</h3>
-                                <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold mt-1">
-                                    Potencia: {kit.power}
-                                </span>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                        Potencia: {kit.power}
+                                    </span>
+                                    <span className="inline-block px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                        Generación: {kit.id === 'kit-custom' ? kit.estimatedProduction : `~${kit.estimatedProduction}`}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -58,9 +63,15 @@ const KitSelectionStep: React.FC<KitSelectionStepProps> = ({ selectedKitId, onSe
 
                         <div className="mt-auto pt-4 border-t border-dashed dark:border-slate-700">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Inversión Estimada</p>
-                            <p className="text-3xl font-black text-blue-600 dark:text-blue-400">
-                                {kit.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
-                            </p>
+                            {kit.id === 'kit-custom' ? (
+                                <p className="text-sm italic font-medium text-blue-600 dark:text-blue-400 mt-1 leading-snug">
+                                    La inversión estimada es la inversión de un kit más las modificaciones.
+                                </p>
+                            ) : (
+                                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">
+                                    {kit.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
+                                </p>
+                            )}
                         </div>
                     </button>
                 ))}

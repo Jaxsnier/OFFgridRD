@@ -1,2 +1,2 @@
-// Versión v1.0.9: Tarifa escalonada dominicana y gráfico anual detallado
-export const APP_VERSION = 'v1.0.9';
+// Versión v1.1.1: Inclusión del Kit Personalizado
+export const APP_VERSION = 'v1.1.1';

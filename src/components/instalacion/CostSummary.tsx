@@ -16,14 +16,18 @@ const CostSummary: React.FC<CostSummaryProps> = ({ items, total }) => {
         let message = `¡Hola! He personalizado una instalación en su web y quisiera una cotización formal. Este es mi resumen:\n\n`;
         
         items.forEach(item => {
-            message += `* ${item.name}: ${item.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}\n`;
+            const costStr = item.cost === 0 ? 'Por definir' : item.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+            message += `* ${item.name}: ${costStr}\n`;
         });
         
-        message += `\n*TOTAL ESTIMADO:* ${total.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}\n\n`;
+        const totalStr = total === 0 ? 'Sujeto a evaluación' : total.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+        message += `\n*TOTAL ESTIMADO:* ${totalStr}\n\n`;
         message += `¡Espero su contacto!`;
 
         return encodeURIComponent(message);
     };
+
+    const hasCustomKit = items.some(item => item.name === 'Kit Personalizado');
 
     return (
         <div className="sticky top-8 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
@@ -40,7 +44,7 @@ const CostSummary: React.FC<CostSummaryProps> = ({ items, total }) => {
                         <li key={item.name} className="flex justify-between items-center text-sm">
                             <span className="text-slate-600 dark:text-slate-400">{item.name}</span>
                             <span className="font-medium text-slate-800 dark:text-slate-200">
-                                {item.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
+                                {item.cost === 0 ? 'Por definir' : item.cost.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
                             </span>
                         </li>
                     ))}
@@ -50,9 +54,14 @@ const CostSummary: React.FC<CostSummaryProps> = ({ items, total }) => {
                 <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-slate-900 dark:text-slate-100">Total Estimado</span>
                     <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {total.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
+                        {(total === 0 && hasCustomKit) ? 'Pendiente' : total.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}
                     </span>
                 </div>
+                {hasCustomKit && (
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-2 italic">
+                        * Inversión final sujeta a evaluación técnica del proyecto personalizado.
+                    </p>
+                )}
             </div>
             <div className="mt-6">
                 <a

@@ -1,2 +1,2 @@
-// Versión v1.1.2: Direcciones detalladas en mapas y lista lateral
-export const APP_VERSION = 'v1.1.2';
+// Versión v1.1.3: Corrección de mapeo de columnas P, Q, R para direcciones
+export const APP_VERSION = 'v1.1.3';

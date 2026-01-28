@@ -22,10 +22,20 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             throw new Error("El archivo está vacío o no tiene datos.");
         }
 
-        // Indices basados en estructura típica de archivos de EDES:
-        // 0: ID, 3: Sector, 4: Calle, 5: No. Casa / Puerta, 8-10: Nombres, 11: Teléfono, 47: Monto, 52: Lat, 53: Lng
-        const vistoIndex = 78; // Column CA
-        const comentarioIndex = 80; // Column CC
+        // Mapeo de columnas basado en el feedback del usuario:
+        // P (15): calle
+        // Q (16): numero_puerta
+        // R (17): referencia_direccion
+        // I, J, K (8, 9, 10): Nombres y Apellidos
+        // L (11): Teléfono
+        // AV (47): Monto / Consumo
+        // BK (52): Latitud
+        // BL (53): Longitud
+        // CA (78): Visto
+        // CC (80): Comentario
+
+        const vistoIndex = 78;
+        const comentarioIndex = 80;
 
         const parsedClients: Client[] = json.slice(1).map((row: any) => {
             const firstName = row[8] || '';
@@ -33,26 +43,26 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             const lastName2 = row[10] || '';
             const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
 
-            // Extracción de dirección: Calle + Numero de Puerta, Sector
-            const sector = row[3] || '';
-            const calle = row[4] || '';
-            const numeroPuerta = row[5] || '';
+            // Extracción de dirección utilizando P, Q, R
+            const calle = row[15] != null ? String(row[15]).trim() : '';
+            const numeroPuerta = row[16] != null ? String(row[16]).trim() : '';
+            const referencia = row[17] != null ? String(row[17]).trim() : '';
             
-            // Construimos la dirección limpia
-            const addressParts = [];
+            // Construcción de la dirección: Calle #Puerta (Referencia)
+            let addressParts = [];
             if (calle) addressParts.push(calle);
             if (numeroPuerta) addressParts.push(`#${numeroPuerta}`);
-            const streetLine = addressParts.join(' ');
             
-            const fullAddress = sector 
-                ? `${streetLine}${streetLine ? ', ' : ''}${sector}`
-                : streetLine;
+            let fullAddress = addressParts.join(' ');
+            if (referencia) {
+                fullAddress += fullAddress ? ` (${referencia})` : referencia;
+            }
 
             return {
                 id: row[0] != null ? String(row[0]) : '',
                 name: fullName || 'Sin Nombre',
-                lat: parseFloat(row[52]), // Column BK
-                lng: parseFloat(row[53]), // Column BL
+                lat: parseFloat(row[52]),
+                lng: parseFloat(row[53]),
                 phone: row[11] || 'N/A',
                 amount: parseFloat(row[47]) || 0,
                 address: fullAddress.trim() || 'Dirección no especificada',
@@ -65,7 +75,6 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
         self.postMessage({ clients: parsedClients, originalData: json });
 
     } catch (error: any) {
-        // If an error occurs, post it back to the main thread
         self.postMessage({ error: error.message });
     }
 };

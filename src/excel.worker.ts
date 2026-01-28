@@ -22,7 +22,8 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             throw new Error("El archivo está vacío o no tiene datos.");
         }
 
-        const headers = json[0].map(h => h?.toString().toLowerCase().trim());
+        // Indices basados en estructura típica de archivos de EDES:
+        // 0: ID, 3: Sector, 4: Calle, 5: No. Casa / Puerta, 8-10: Nombres, 11: Teléfono, 47: Monto, 52: Lat, 53: Lng
         const vistoIndex = 78; // Column CA
         const comentarioIndex = 80; // Column CC
 
@@ -32,24 +33,33 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             const lastName2 = row[10] || '';
             const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
 
-            // Extracción de dirección asumiendo columnas: Sector(3), Calle(4), No.(5)
+            // Extracción de dirección: Calle + Numero de Puerta, Sector
             const sector = row[3] || '';
             const calle = row[4] || '';
-            const casa = row[5] || '';
-            const address = `${calle} ${casa}, ${sector}`.trim().replace(/^,|,$/g, '').replace(/\s+/g, ' ');
+            const numeroPuerta = row[5] || '';
+            
+            // Construimos la dirección limpia
+            const addressParts = [];
+            if (calle) addressParts.push(calle);
+            if (numeroPuerta) addressParts.push(`#${numeroPuerta}`);
+            const streetLine = addressParts.join(' ');
+            
+            const fullAddress = sector 
+                ? `${streetLine}${streetLine ? ', ' : ''}${sector}`
+                : streetLine;
 
             return {
                 id: row[0] != null ? String(row[0]) : '',
-                name: fullName,
+                name: fullName || 'Sin Nombre',
                 lat: parseFloat(row[52]), // Column BK
                 lng: parseFloat(row[53]), // Column BL
                 phone: row[11] || 'N/A',
                 amount: parseFloat(row[47]) || 0,
-                address: address || 'Dirección no especificada',
+                address: fullAddress.trim() || 'Dirección no especificada',
                 visto: (parseInt(row[vistoIndex]) === 1 ? 1 : 0) as (0 | 1),
                 comentario: row[comentarioIndex] || ''
             };
-        }).filter(client => client.id && client.name && !isNaN(client.lat) && !isNaN(client.lng));
+        }).filter(client => client.id && !isNaN(client.lat) && !isNaN(client.lng));
         
         // Post the processed data back to the main thread
         self.postMessage({ clients: parsedClients, originalData: json });

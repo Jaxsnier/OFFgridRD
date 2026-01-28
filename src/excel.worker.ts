@@ -32,6 +32,12 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             const lastName2 = row[10] || '';
             const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
 
+            // Extracción de dirección asumiendo columnas: Sector(3), Calle(4), No.(5)
+            const sector = row[3] || '';
+            const calle = row[4] || '';
+            const casa = row[5] || '';
+            const address = `${calle} ${casa}, ${sector}`.trim().replace(/^,|,$/g, '').replace(/\s+/g, ' ');
+
             return {
                 id: row[0] != null ? String(row[0]) : '',
                 name: fullName,
@@ -39,6 +45,7 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
                 lng: parseFloat(row[53]), // Column BL
                 phone: row[11] || 'N/A',
                 amount: parseFloat(row[47]) || 0,
+                address: address || 'Dirección no especificada',
                 visto: (parseInt(row[vistoIndex]) === 1 ? 1 : 0) as (0 | 1),
                 comentario: row[comentarioIndex] || ''
             };

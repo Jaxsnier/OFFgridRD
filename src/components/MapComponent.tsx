@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Client } from '../types';
 
@@ -239,11 +237,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
             container.style.width = '280px';
             container.style.fontSize = '0.9rem';
 
-            // Client Info
+            // Client Info con Dirección
             container.innerHTML = `
-                <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0 0 8px 0;">${client.name}</h3>
-                <p style="margin: 4px 0;"><strong>Teléfono:</strong> ${client.phone}</p>
-                <p style="margin: 4px 0 12px 0;"><strong>Consumo:</strong> ${client.amount.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+                <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0 0 4px 0;">${client.name}</h3>
+                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 0.8rem; line-height: 1.2;">${client.address}</p>
+                <div style="margin: 8px 0; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                    <p style="margin: 4px 0;"><strong>Teléfono:</strong> ${client.phone}</p>
+                    <p style="margin: 4px 0 12px 0;"><strong>Consumo:</strong> ${client.amount.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}</p>
+                </div>
             `;
 
             // Comment Form

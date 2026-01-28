@@ -22,20 +22,17 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             throw new Error("El archivo está vacío o no tiene datos.");
         }
 
-        // Mapeo de columnas basado en el feedback del usuario:
-        // P (15): calle
-        // Q (16): numero_puerta
-        // R (17): referencia_direccion
-        // I, J, K (8, 9, 10): Nombres y Apellidos
-        // L (11): Teléfono
-        // AV (47): Monto / Consumo
-        // BK (52): Latitud
-        // BL (53): Longitud
-        // CA (78): Visto
-        // CC (80): Comentario
+        // Obtener cabeceras para búsqueda dinámica
+        const headers = json[0].map(h => h?.toString().toLowerCase().trim() || '');
+        
+        // Buscamos los índices de 'visto' y 'comentario' por nombre
+        // Esto permite que el archivo funcione incluso si las columnas se agregaron al final tras una exportación
+        let vistoIndex = headers.indexOf('visto');
+        let comentarioIndex = headers.indexOf('comentario');
 
-        const vistoIndex = 78;
-        const comentarioIndex = 80;
+        // Fallbacks históricos si no se encuentran por nombre (basados en estructura original de EDES)
+        if (vistoIndex === -1) vistoIndex = 78; // Columna CA
+        if (comentarioIndex === -1) comentarioIndex = 80; // Columna CC
 
         const parsedClients: Client[] = json.slice(1).map((row: any) => {
             const firstName = row[8] || '';
@@ -43,7 +40,7 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
             const lastName2 = row[10] || '';
             const fullName = `${firstName} ${lastName1} ${lastName2}`.trim().replace(/\s+/g, ' ');
 
-            // Extracción de dirección utilizando P, Q, R
+            // Extracción de dirección utilizando P, Q, R (15, 16, 17)
             const calle = row[15] != null ? String(row[15]).trim() : '';
             const numeroPuerta = row[16] != null ? String(row[16]).trim() : '';
             const referencia = row[17] != null ? String(row[17]).trim() : '';
@@ -58,6 +55,12 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
                 fullAddress += fullAddress ? ` (${referencia})` : referencia;
             }
 
+            // Lectura de estado visto y comentario
+            // Aseguramos que el valor de visto sea estrictamente 0 o 1
+            const vistoRaw = row[vistoIndex];
+            const vistoValue = (vistoRaw === 1 || vistoRaw === '1') ? 1 : 0;
+            const comentarioValue = row[comentarioIndex] != null ? String(row[comentarioIndex]).trim() : '';
+
             return {
                 id: row[0] != null ? String(row[0]) : '',
                 name: fullName || 'Sin Nombre',
@@ -66,8 +69,8 @@ self.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
                 phone: row[11] || 'N/A',
                 amount: parseFloat(row[47]) || 0,
                 address: fullAddress.trim() || 'Dirección no especificada',
-                visto: (parseInt(row[vistoIndex]) === 1 ? 1 : 0) as (0 | 1),
-                comentario: row[comentarioIndex] || ''
+                visto: vistoValue as (0 | 1),
+                comentario: comentarioValue
             };
         }).filter(client => client.id && !isNaN(client.lat) && !isNaN(client.lng));
         

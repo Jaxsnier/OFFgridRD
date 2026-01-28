@@ -1,2 +1,2 @@
-// Versión v1.1.3: Corrección de mapeo de columnas P, Q, R para direcciones
-export const APP_VERSION = 'v1.1.3';
+// Versión v1.1.4: Carga dinámica de comentarios y estado visto desde Excel
+export const APP_VERSION = 'v1.1.4';

@@ -1,0 +1,174 @@
+================================================================================
+          OFFGRID RD - LISTA MAESTRA DE VARIABLES Y COSTOS DE MERCADO
+          GUÍA PARA DICTAMINAR PRECIOS DE SISTEMAS SOLARES FOTOVOLTAICOS
+================================================================================
+Versión del documento: 1.0 (Referencia Mercado República Dominicana - DOP / USD)
+Tasa de cambio referencia: 1 USD ≈ 60.00 DOP (Ajustable)
+
+Este documento contiene la estructura completa de variables, clasificación de
+marcas (Normal/Estándar vs. Premium), componentes y fórmulas para presupuestar y
+cotizar proyectos residenciales y comerciales. Puedes modificar los valores entre
+corchetes [ ] según tus cotizaciones con distribuidores y suplidores locales.
+
+--------------------------------------------------------------------------------
+1. CLASIFICACIÓN DE MARCAS: NORMAL (TIER 1 ESTÁNDAR) VS. PREMIUM (HIGH-END)
+--------------------------------------------------------------------------------
+
+A) INVERSORES SOLARES:
+   * CALIDAD NORMAL / ESTÁNDAR (Excelente relación calidad/precio, garantía 5 años):
+     - Growatt (Serie MIN, MOD, SPH)
+     - Deye (Híbridos On/Off Grid monoplaca/trifásicos)
+     - Solis (Ginlong)
+     - GoodWe
+     - Huawei FusionSolar (Línea residencial SUN2000)
+     - Must Solar / SRNE (Gama de entrada off-grid)
+
+   * CALIDAD PREMIUM (Máxima durabilidad, grado industrial, garantía 10-15 años):
+     - Victron Energy (MultiPlus, Quattro, SmartSolar MPPT - Holanda)
+     - Fronius (Primo, Symo, Gen24 - Austria)
+     - SMA Solar (Sunny Boy, Sunny Tripower - Alemania)
+     - Enphase (Microinversores IQ7 / IQ8)
+     - SolarEdge (Inversores con optimizadores de potencia)
+
+B) BATERÍAS Y ALMACENAMIENTO (LITIO LiFePO4):
+   * CALIDAD NORMAL / ESTÁNDAR (6,000 ciclos @ 80% DoD, garantía 5-7 años):
+     - Pylontech (US3000C, US5000, Force L1/L2)
+     - Deye Lithium (RW-M6.1, SE-G5.1)
+     - Felicity Solar (LPBA, LiFePO4 de pared o rack)
+     - Growatt (GBLI, Hope / ARK)
+     - Dyness (B4850, Powerbox)
+
+   * CALIDAD PREMIUM (Grade A Cells, 8,000-10,000 ciclos, BMS avanzado, 10 años):
+     - Victron Energy Lithium SuperPack / Smart LiFePO4
+     - BYD Battery-Box (Premium HVS / HVM / LVS)
+     - Tesla Powerwall 2 / 3
+     - Enphase IQ Battery 5P / 10T
+     - Fortress Power (eVault, eFlex)
+
+C) PANELES / MÓDULOS SOLARES (TIER 1 BLOOMBERG NEF):
+   * CALIDAD NORMAL / ESTÁNDAR (Monocristalinos PERC / TopCon 550W - 585W):
+     - Jinko Solar (Tiger Neo)
+     - JA Solar (DeepBlue)
+     - LONGi Solar (Hi-MO 5 / Hi-MO 6)
+     - Trina Solar (Vertex S)
+     - Risen Energy
+
+   * CALIDAD PREMIUM (N-Type Bifaciales, TopCon/HJT, degradación < 0.4%/año, 600W+):
+     - Canadian Solar (HiHero / BiHiKu7 N-Type)
+     - REC Solar (Alpha Pure-R / Heterounión - Noruega)
+     - Maxeon / SunPower (Celdas interdigitadas IBC)
+     - Meyer Burger (Tecnología Heterojunction - Suiza/Alemania)
+
+D) PROTECCIONES Y ELECTRICIDAD:
+   * CALIDAD NORMAL / ESTÁNDAR:
+     - Suntree, Chint Electric, TOMZN, CNC, Ebasee
+   * CALIDAD PREMIUM:
+     - Schneider Electric, ABB, Dehn (Supresores de pico SPD clase 1+2), Siemens, Eaton
+
+--------------------------------------------------------------------------------
+2. MATRIZ DE PRECIOS BASE DE COSTO (REFERENCIA MERCADO LOCAL)
+--------------------------------------------------------------------------------
+*Nota: Los precios mostrados representan costo de adquisición para el instalador.*
+
+[A] INVERSORES ON-GRID / HÍBRIDOS (Costo estimado según capacidad):
+  - Inversor 3 kW (Normal):     [RD$ 70,000 - 85,000]   / [US$ 1,150 - 1,400]
+  - Inversor 3 kW (Premium):    [RD$ 100,000 - 125,000] / [US$ 1,650 - 2,080]
+  
+  - Inversor 5 kW (Normal):     [RD$ 115,000 - 130,000] / [US$ 1,900 - 2,150]
+  - Inversor 5 kW (Premium):    [RD$ 160,000 - 190,000] / [US$ 2,650 - 3,150]
+  
+  - Inversor 8 kW (Normal):     [RD$ 170,000 - 195,000] / [US$ 2,800 - 3,250]
+  - Inversor 8 kW (Premium):    [RD$ 230,000 - 275,000] / [US$ 3,800 - 4,550]
+  
+  - Inversor 10 kW (Normal):    [RD$ 210,000 - 245,000] / [US$ 3,500 - 4,080]
+  - Inversor 10 kW (Premium):   [RD$ 290,000 - 350,000] / [US$ 4,800 - 5,800]
+  
+  - Inversor 15 kW (Trifásico): [RD$ 320,000 - 380,000] / [US$ 5,300 - 6,300]
+  - Inversor 20 kW (Trifásico): [RD$ 410,000 - 490,000] / [US$ 6,800 - 8,150]
+
+[B] BATERÍAS DE LITIO LiFePO4 (Costo estimado según capacidad en kWh):
+  - Batería 5 kWh (48V / 100Ah - Normal):    [RD$ 85,000 - 105,000]  / [US$ 1,400 - 1,750]
+  - Batería 5 kWh (Premium Victron/BYD):     [RD$ 125,000 - 150,000] / [US$ 2,080 - 2,500]
+  
+  - Batería 10 kWh (Rack o Pared - Normal):  [RD$ 165,000 - 195,000] / [US$ 2,750 - 3,250]
+  - Batería 10 kWh (Premium BYD / Tesla):    [RD$ 240,000 - 290,000] / [US$ 4,000 - 4,800]
+  
+  - Batería 15 kWh (Alta Capacidad Normal):  [RD$ 245,000 - 290,000] / [US$ 4,100 - 4,800]
+  - Batería 15 kWh (Alta Capacidad Premium): [RD$ 350,000 - 420,000] / [US$ 5,800 - 7,000]
+
+[C] PANELES SOLARES (Por vatio o módulo completo de ~580W-600W):
+  - Costo por Vatio Normal (PERC/TopCon):    [US$ 0.22 - 0.26 / Watt] -> ~RD$ 7,600 - 9,000 por panel de 585W
+  - Costo por Vatio Premium (Bifacial N-Type):[US$ 0.28 - 0.35 / Watt] -> ~RD$ 10,000 - 12,500 por panel de 600W
+  - Costo por kWp instalado (solo paneles):
+    * Normal:  [RD$ 14,000 - 16,000 por kWp]
+    * Premium: [RD$ 18,500 - 22,000 por kWp]
+
+[D] CANALIZACIÓN ELÉCTRICA Y CABLEADO (Por metro lineal):
+  - Canalización Normal (Tubo EMT / PVC pesado + Cable solar 10AWG + accesorios):
+    * Costo por metro: [RD$ 750 - 900 / metro]
+    * Ejemplo: 25 metros = RD$ 18,750 - 22,500
+  - Canalización Premium (Conduit galvanizado exterior + LiquidTight + Cable TopCable/Helukabel):
+    * Costo por metro: [RD$ 1,100 - 1,400 / metro]
+    * Ejemplo: 25 metros = RD$ 27,500 - 35,000
+
+[E] PROTECCIONES DC / AC Y PUESTA A TIERRA:
+  - Kit Normal (Tablero estanco, breakers DC/AC, descargador de sobretensión SPD 600V, varilla copperweld 5/8):
+    * Costo base: [RD$ 14,000 - 18,000]
+  - Kit Premium (Tablero IP66, SPD Schneider/Dehn Clase I+II, fusibles gPV Mersen, barra equipotencial de cobre):
+    * Costo base: [RD$ 22,000 - 32,000]
+
+[F] ESTRUCTURA DE MONTAJE Y ANCLAJES (Por panel solar):
+  - Techo de Teja / Zinc con ganchos de aluminio:  [RD$ 2,200 - 2,800 por panel]
+  - Techo Plano de Concreto (Triángulos inclinados):[RD$ 2,800 - 3,500 por panel]
+  - Techo Plano Lastrado (Sin perforación):         [RD$ 3,800 - 4,800 por panel]
+  - Estructura sobre Suelo / Carport Solar:        [RD$ 4,500 - 6,000 por panel]
+
+[G] MANO DE OBRA, INSTALACIÓN Y PUESTA EN MARCHA:
+  - Base fija de cuadrilla técnica:       [RD$ 20,000 - 35,000]
+  - Costo variable por kW instalado:      [RD$ 3,000 - 4,500 por kW]
+  - Adicional instalación banco baterías: [RD$ 8,000 - 15,000]
+
+[H] LOGÍSTICA, FLETE Y TRANSPORTE:
+  - Zona metropolitana (Santo Domingo / Santiago): [RD$ 6,000 - 10,000]
+  - Interior / Zonas remotas (Punta Cana, Samaná): [RD$ 12,000 - 25,000]
+
+[I] GESTIÓN DE INTERCONEXIÓN Y MEDIDOR BIDIRECCIONAL (OPCIONAL):
+  - Solicitud de no objeción + inspección EDE (Edeeste/Edesur/Edenorte) + planos firmados por CODIA:
+    * Costo trámite: [RD$ 30,000 - 50,000]
+
+--------------------------------------------------------------------------------
+3. MÁRGENES DE BENEFICIO RECOMENDADOS (DE COSTO INTERNO A PRECIO CLIENTE)
+--------------------------------------------------------------------------------
+Para garantizar la rentabilidad de la empresa y cubrir imprevistos y garantías:
+
+- Equipos principales (Inversores y Baterías): Margen de 20% a 30%
+  * Multiplicador: Costo x 1.25
+- Paneles solares:                             Margen de 25% a 35%
+  * Multiplicador: Costo x 1.28
+- Materiales menores (Canalización, tornillería): Margen de 30% a 45%
+  * Multiplicador: Costo x 1.35
+- Protecciones y tableros:                     Margen de 30% a 40%
+  * Multiplicador: Costo x 1.35
+- Mano de obra:                                Margen de 35% a 50%
+  * Multiplicador: Costo x 1.40
+- Margen bruto global promedio recomendado:    28% - 35% sobre el costo total
+
+--------------------------------------------------------------------------------
+4. EJEMPLO PRÁCTICO DE CÁLCULO: SISTEMA 8 KW / 9.0 KWP (CALIDAD NORMAL)
+--------------------------------------------------------------------------------
+Componentes:
+- Inversor Growatt/Deye 8 kW:             Costo: RD$ 180,000  | Venta (+25%): RD$ 225,000
+- 16 Paneles 585W (9.36 kWp):             Costo: RD$ 135,000  | Venta (+28%): RD$ 172,800
+- 30 metros de Canalización (RD$ 800/m):  Costo: RD$  24,000  | Venta (+30%): RD$  31,200
+- Protecciones DC/AC completas:           Costo: RD$  18,000  | Venta (+35%): RD$  24,300
+- Estructura Aluminio (16 paneles x 2800):Costo: RD$  44,800  | Venta (+30%): RD$  58,240
+- Mano de obra (Base + 9.36 kW):          Costo: RD$  55,000  | Venta (+40%): RD$  77,000
+- Transporte y logística:                 Costo: RD$  10,000  | Venta (+20%): RD$  12,000
+--------------------------------------------------------------------------------
+TOTAL COSTO INTERNO:                      RD$ 466,800
+TOTAL COTIZADO AL CLIENTE (Llave en mano):RD$ 600,540 (~US$ 10,009)
+MARGEN BRUTO ESPERADO:                    RD$ 133,740 (28.6% sobre costo / 22.3% sobre venta)
+
+================================================================================
+FIN DEL DOCUMENTO DE VARIABLES Y COSTOS
+================================================================================

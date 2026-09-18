@@ -1,5 +1,6 @@
 {
   "name": "OFFgridRD",
-  "description": "Una aplicación interactiva para cargar, filtrar y visualizar datos de clientes desde un archivo Excel (.xlsx) directamente en el navegador.",
-  "requestFramePermissions": []
+  "description": "Aplicación integral para dimensionamiento solar, cotizaciones rápidas para clientes, presupuestos divididos por partidas y visualización geográfica de proyectos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

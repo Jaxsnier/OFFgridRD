@@ -51,7 +51,34 @@
     animation: fadeInUp 0.8s ease-out forwards;
     opacity: 0;
   }
+  @media print {
+    header, aside, .print\\:hidden, #print-action-bar {
+      display: none !important;
+    }
+    body, html, #root, .h-screen {
+      height: 100% !important;
+      overflow: visible !important;
+      background: white !important;
+    }
+    #printable-client-quote-document {
+      min-height: 258mm !important;
+      height: 258mm !important;
+      max-height: 260mm !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+    }
+    .signatures-block {
+      margin-top: auto !important;
+      padding-top: 16px !important;
+    }
+  }
 </style>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>

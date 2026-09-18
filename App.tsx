@@ -17,8 +17,9 @@ import LoadingOverlay from './src/components/LoadingOverlay';
 import InicioPage from './src/components/InicioPage';
 import CalculadoraSolarPage from './src/components/CalculadoraSolarPage';
 import InstalacionPersonalizadaPage from './src/components/InstalacionPersonalizadaPage';
+import CotizacionPage from './src/components/CotizacionPage';
 
-export type View = 'inicio' | 'calculadora' | 'instalacion_personalizada' | 'potenciales' | 'nosotros';
+export type View = 'inicio' | 'calculadora' | 'instalacion_personalizada' | 'cotizacion' | 'potenciales' | 'nosotros';
 
 // Fix: Declare XLSX to inform TypeScript that it's a global variable.
 declare var XLSX: any;
@@ -138,6 +139,7 @@ const App: React.FC = () => {
                     {activeView === 'inicio' && <InicioPage />}
                     {activeView === 'calculadora' && <CalculadoraSolarPage />}
                     {activeView === 'instalacion_personalizada' && <InstalacionPersonalizadaPage />}
+                    {activeView === 'cotizacion' && <CotizacionPage />}
                     {activeView === 'nosotros' && <NosotrosPage />}
                     {activeView === 'potenciales' && (
                         <>

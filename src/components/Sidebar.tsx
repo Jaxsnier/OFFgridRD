@@ -163,6 +163,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('cotizacion'); onClose(); }} className={`flex items-center justify-between p-3 rounded-lg font-semibold ${activeView === 'cotizacion' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                                        <div className="flex items-center gap-2">
+                                            <span>Cotización</span>
+                                        </div>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                                            Nuevo
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('potenciales'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'potenciales' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                                         Base De Datos
                                     </a>

@@ -43,7 +43,10 @@ export const CotizacionPage: React.FC = () => {
             inverterCapacityKw: preset.inverterKw,
             peakPowerKwp: preset.kwp,
             conduitMeters: preset.conduitMeters,
-            quality: preset.recommendedQuality
+            quality: preset.recommendedQuality,
+            includeBatteries: preset.includeBatteries ?? prev.includeBatteries,
+            batteryKwh: preset.batteryKwh ?? prev.batteryKwh,
+            protectionStrings: preset.protectionStrings ?? prev.protectionStrings
         }));
     };
 

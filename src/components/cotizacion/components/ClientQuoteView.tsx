@@ -244,15 +244,27 @@ ${input.includeBatteries ? `• Batería: ${input.batteryKwh} kWh Litio LiFePO4\
                                     <tr>
                                         <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">Almacenamiento Litio</td>
                                         <td className="py-2.5 px-3 leading-snug">
-                                            Banco de baterías LiFePO4 de {input.batteryKwh} kWh, 6,000 ciclos de vida útil al 90% DoD con BMS inteligente integrado.
+                                            Batería American 15kW LiFePO4 ({input.batteryKwh} kWh total) con BMS inteligente integrado.
                                         </td>
                                         <td className="py-2.5 px-3 text-center font-medium whitespace-nowrap">{input.batteryKwh} kWh</td>
+                                    </tr>
+                                )}
+                                {(input.includeEdesPermits !== false || input.includeMeterBaseCl200 !== false) && (
+                                    <tr>
+                                        <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">Requisitos EDES</td>
+                                        <td className="py-2.5 px-3 leading-snug">
+                                            {[
+                                                input.includeEdesPermits !== false ? 'Gestión de permisos de interconexión' : null,
+                                                input.includeMeterBaseCl200 !== false ? 'Base CL 200 para medidor bidireccional' : null
+                                            ].filter(Boolean).join(' + ')}.
+                                        </td>
+                                        <td className="py-2.5 px-3 text-center font-medium whitespace-nowrap">Incluido</td>
                                     </tr>
                                 )}
                                 <tr>
                                     <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">Instalación y Puesta en Marcha</td>
                                     <td className="py-2.5 px-3 leading-snug">
-                                        Mano de obra certificada por técnicos calificados, pruebas de tensión, configuración de monitoreo y entrega operativa.
+                                        Mano de obra y supervisión técnica (5%), transporte y logística (1%), pruebas y puesta en marcha.
                                     </td>
                                     <td className="py-2.5 px-3 text-center font-medium whitespace-nowrap">Completo</td>
                                 </tr>

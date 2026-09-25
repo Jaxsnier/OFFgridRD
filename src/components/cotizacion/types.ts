@@ -25,6 +25,13 @@ export interface QuoteInput {
     batteryKwh: number;
     currency: 'DOP' | 'USD';
     exchangeRate: number;
+    // Variables conectadas con LISTA_PRECIOS_Y_COMPONENTES_SOLAR.txt
+    profitMarginPercent?: number; // Rango 15% (min) a 30% (max)
+    protectionStrings?: 1 | 2; // 1 string ($80 USD) o 2 strings ($170 USD)
+    includeEdesPermits?: boolean; // Gestión de permisos ($500 USD)
+    includeMeterBaseCl200?: boolean; // Base CL 200 para medidor ($150 USD)
+    includeAdjustableBase?: boolean; // Base ajustable 15° de aluminio ($8 USD)
+    cableRollsCount?: number; // Rollo de cable PV 4mm ($100 USD)
 }
 
 export interface BudgetDivisionItem {

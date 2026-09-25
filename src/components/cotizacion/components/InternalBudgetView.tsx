@@ -191,7 +191,7 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
                             {calculation.items.map((item) => {
                                 const isEditing = editingItemId === item.id;
                                 const itemProfit = item.priceQuoted - item.costInternal;
-                                const itemMargin = item.priceQuoted > 0 ? ((itemProfit / item.priceQuoted) * 100).toFixed(0) : '0';
+                                const itemMargin = item.costInternal > 0 ? ((itemProfit / item.costInternal) * 100).toFixed(0) : '0';
 
                                 return (
                                     <tr 

@@ -24,7 +24,7 @@ export const calculatePanelsPartida = (
     const priceQuoted = Math.round(costInternal * marginMultiplier);
 
     const actualKwp = ((panelCount * panelWattage) / 1000).toFixed(2);
-    const panelsSpecsText = `Panel Solar ${panelWattage}W ($${PANEL_SOLAR_610W_USD} USD c/u)`;
+    const panelsSpecsText = `Panel Solar ${panelWattage}W`;
 
     return {
         panelCount,

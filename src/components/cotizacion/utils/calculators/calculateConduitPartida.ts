@@ -27,14 +27,15 @@ export const calculateConduitPartida = (
     const costInternal = Math.round(totalUsd * input.exchangeRate);
     const priceQuoted = Math.round(costInternal * marginMultiplier);
 
-    const conduitSpecsText = `${tubosEmtCount}x Tubo EMT de 1' ($${TUBO_EMT_1_PULGADA_USD} USD c/u) + ${rollosCableCount}x Rollo de cable PV 4mm ($${ROLLO_CABLE_PV_4MM_USD} USD c/u)`;
+    const conduitSpecsText = `${tubosEmtCount}x Tubo EMT de 1' + ${rollosCableCount}x Rollo de cable PV 4mm`;
+    const internalDescription = `${tubosEmtCount}x Tubo EMT de 1' ($${TUBO_EMT_1_PULGADA_USD} USD c/u) + ${rollosCableCount}x Rollo de cable PV 4mm ($${ROLLO_CABLE_PV_4MM_USD} USD c/u) (${input.conduitMeters}m totales)`;
 
     return {
         conduitSpecsText,
         item: {
             id: 'canalizacion',
             category: 'Canalización & Cableado Solar (Extras / Sec. 1)',
-            description: `${conduitSpecsText} (${input.conduitMeters}m totales)`,
+            description: internalDescription,
             unitDetail: `${tubosEmtCount} tubos EMT + ${rollosCableCount} rollo(s) PV`,
             costInternal,
             priceQuoted

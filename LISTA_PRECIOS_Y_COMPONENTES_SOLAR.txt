@@ -39,3 +39,6 @@ Margen de ganancia min = 15%
 Margen de ganancia max = 30%
 Transporte & Logística = 1% del total
 Mano de obra y supervision = 5% del total
+Perfil de aluminio (riel 19 pies) = 1 unidad por cada 2.5 paneles
+End clamp = 2 al inicio y 2 al final de cada string (4 por string)
+Mid clamp = 2 en medio de cada 2 paneles

@@ -41,7 +41,7 @@ export const calculateInverterPartida = (
     const priceQuoted = Math.round(costInternal * marginMultiplier);
 
     return {
-        inverterBrandText: `${modelName} ($${unitPriceUsd.toLocaleString()} USD)`,
+        inverterBrandText: quantity > 1 ? `${quantity}x ${modelName}` : modelName,
         item: {
             id: 'inversor',
             category: 'Inversor Solar Híbrido',

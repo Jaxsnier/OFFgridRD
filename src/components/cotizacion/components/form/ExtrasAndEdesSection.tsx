@@ -11,8 +11,10 @@ import {
     CAJA_PROTECCION_PV_1_STRING_USD,
     CAJA_PROTECCION_PV_2_STRING_USD,
     TUBO_EMT_1_PULGADA_USD,
-    TUBO_EMT_METROS_POR_UNIDAD
+    TUBO_EMT_METROS_POR_UNIDAD,
+    PANEL_SOLAR_610W_WATTS
 } from '../../pricing';
+import { getStructureUnitsBreakdown } from '../../utils/calculators/calculateStructurePartida';
 
 interface ExtrasAndEdesSectionProps {
     input: QuoteInput;
@@ -20,12 +22,14 @@ interface ExtrasAndEdesSectionProps {
 }
 
 export const ExtrasAndEdesSection: React.FC<ExtrasAndEdesSectionProps> = ({ input, onChange }) => {
+    const panelCount = Math.max(1, Math.ceil((input.peakPowerKwp * 1000) / PANEL_SOLAR_610W_WATTS));
     const tubosCount = Math.max(1, Math.ceil(input.conduitMeters / TUBO_EMT_METROS_POR_UNIDAD));
     const cableRolls = input.cableRollsCount ?? 1;
     const protectionStrings = input.protectionStrings ?? 1;
     const includeEdesPermits = input.includeEdesPermits ?? true;
     const includeMeterBaseCl200 = input.includeMeterBaseCl200 ?? true;
     const includeAdjustableBase = input.includeAdjustableBase ?? (input.mountingType === 'techo_plano');
+    const structureBreakdown = getStructureUnitsBreakdown(input, panelCount);
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
@@ -169,13 +173,13 @@ export const ExtrasAndEdesSection: React.FC<ExtrasAndEdesSectionProps> = ({ inpu
 
             {/* Estructura de Montaje y Fijación (Sección 1) */}
             <div className="pt-5 border-t border-slate-200 dark:border-slate-700">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                     <div>
                         <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
-                            Estructura de Montaje (Sección 1)
+                            Estructura de Montaje por Unidad (Sección 1)
                         </h4>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Perfil de aluminio (${PERFIL_ALUMINIO_USD} USD) • Mid clamp (${MID_CLAMP_USD} USD) • End clamp (${END_CLAMP_USD} USD) • Base ajustable 15° (${BASE_AJUSTABLE_15_GRADOS_ALUMINIO_USD} USD)
+                            Perfil de aluminio 19&apos; ($35 USD, 1 c/ 2.5 paneles) • Mid clamp ($2 USD, 2 entre cada 2 paneles) • End clamp ($2 USD, 2 inicio + 2 final por string) • Base ajustable 15° ($8 USD)
                         </p>
                     </div>
 
@@ -206,6 +210,33 @@ export const ExtrasAndEdesSection: React.FC<ExtrasAndEdesSectionProps> = ({ inpu
                             />
                             <span>Incluir Base ajustable 15° (${BASE_AJUSTABLE_15_GRADOS_ALUMINIO_USD} USD)</span>
                         </label>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600/60">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Riel Aluminio 19&apos; (1 c/ 2.5 pan.)</div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-0.5">
+                            {structureBreakdown.perfilesCount} uds × ${PERFIL_ALUMINIO_USD} = ${structureBreakdown.perfilesCount * PERFIL_ALUMINIO_USD} USD
+                        </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600/60">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Mid Clamp (2 entre c/ 2 pan.)</div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-0.5">
+                            {structureBreakdown.midClampsCount} uds × ${MID_CLAMP_USD} = ${structureBreakdown.midClampsCount * MID_CLAMP_USD} USD
+                        </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600/60">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">End Clamp (4 por string)</div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-0.5">
+                            {structureBreakdown.endClampsCount} uds × ${END_CLAMP_USD} = ${structureBreakdown.endClampsCount * END_CLAMP_USD} USD
+                        </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600/60">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Base Ajustable 15°</div>
+                        <div className="font-bold text-slate-900 dark:text-white mt-0.5">
+                            {structureBreakdown.basesAjustablesCount} uds × ${BASE_AJUSTABLE_15_GRADOS_ALUMINIO_USD} = ${structureBreakdown.basesAjustablesCount * BASE_AJUSTABLE_15_GRADOS_ALUMINIO_USD} USD
+                        </div>
                     </div>
                 </div>
             </div>

@@ -23,20 +23,21 @@ export const calculateProtectionsPartida = (
 
     const boxPriceUsd =
         strings === 2 ? CAJA_PROTECCION_PV_2_STRING_USD : CAJA_PROTECCION_PV_1_STRING_USD;
-    const boxName =
+    const clientBoxName =
         strings === 2
-            ? `Caja de protección PV para 2 strings ($${CAJA_PROTECCION_PV_2_STRING_USD} USD)`
-            : `Caja de protección PV para 1 string ($${CAJA_PROTECCION_PV_1_STRING_USD} USD)`;
+            ? 'Caja de protección PV para 2 strings'
+            : 'Caja de protección PV para 1 string';
+    const internalBoxName = `${clientBoxName} ($${boxPriceUsd} USD)`;
 
     const costInternal = Math.round(boxPriceUsd * input.exchangeRate);
     const priceQuoted = Math.round(costInternal * marginMultiplier);
 
     return {
-        protectionsSpecsText: boxName,
+        protectionsSpecsText: clientBoxName,
         item: {
             id: 'protecciones',
             category: 'Cajas de Protección PV (Extras)',
-            description: boxName,
+            description: internalBoxName,
             unitDetail: `Caja PV ${strings} string${strings > 1 ? 's' : ''} ($${boxPriceUsd} USD)`,
             costInternal,
             priceQuoted

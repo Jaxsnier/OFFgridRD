@@ -6,3 +6,8 @@ export const MARGEN_GANANCIA_DEFAULT_PERCENT = 20;
 
 export const TRANSPORTE_LOGISTICA_PERCENT = 1; // 1% del total
 export const MANO_OBRA_SUPERVISION_PERCENT = 5; // 5% del total
+
+// Fórmulas de estructura (riel de 19 pies y clamps por unidad)
+export const PANELES_POR_PERFIL_ALUMINIO = 2.5; // 1 riel de 19 pies por cada 2.5 paneles
+export const END_CLAMPS_POR_STRING = 4; // 2 al inicio + 2 al final de cada string
+export const MID_CLAMPS_POR_UNION_PANELES = 2; // 2 en medio de cada 2 paneles

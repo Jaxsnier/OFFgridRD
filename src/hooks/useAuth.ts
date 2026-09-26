@@ -10,7 +10,8 @@ import {
     reload
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { UserRole, isDefaultAdminEmail } from '../components/auth/rolesConfig';
+import { UserRole } from '../components/auth/rolesConfig';
+import { resolveRoleByEmail } from '../components/auth/roleStorageService';
 
 export const useAuth = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -26,7 +27,7 @@ export const useAuth = () => {
                 return;
             }
 
-            const defaultRole: UserRole = isDefaultAdminEmail(currentUser.email) ? 'admin' : 'visitante';
+            const defaultRole: UserRole = resolveRoleByEmail(currentUser.email);
 
             try {
                 const userRef = doc(db, 'users', currentUser.uid);
@@ -35,11 +36,10 @@ export const useAuth = () => {
                 if (snap.exists()) {
                     const data = snap.data();
                     const storedRole = data?.role as UserRole | undefined;
-                    const resolvedRole: UserRole = isDefaultAdminEmail(currentUser.email)
-                        ? 'admin'
-                        : storedRole === 'admin' || storedRole === 'vendedor' || storedRole === 'visitante'
-                        ? storedRole
-                        : defaultRole;
+                    const resolvedRole: UserRole = resolveRoleByEmail(
+                        currentUser.email,
+                        storedRole
+                    );
 
                     setRole(resolvedRole);
 

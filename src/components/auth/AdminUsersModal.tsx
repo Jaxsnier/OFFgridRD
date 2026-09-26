@@ -1,52 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
 import { UserRole, ROLE_LABELS, ROLE_BADGE_CLASSES, isDefaultAdminEmail } from './rolesConfig';
-
-interface UserRecord {
-    uid: string;
-    email: string;
-    role: UserRole;
-}
+import {
+    ManagedUserItem,
+    loadAllManagedUsers,
+    persistUserRoleAssignment
+} from './roleStorageService';
+import FirestoreRulesHelp from './FirestoreRulesHelp';
 
 interface AdminUsersModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentUserUid?: string;
+    currentUserEmail?: string | null;
 }
 
 export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
     isOpen,
     onClose,
-    currentUserUid
+    currentUserUid,
+    currentUserEmail
 }) => {
-    const [users, setUsers] = useState<UserRecord[]>([]);
+    const [users, setUsers] = useState<ManagedUserItem[]>([]);
     const [loading, setLoading] = useState(false);
-    const [updatingUid, setUpdatingUid] = useState<string | null>(null);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [updatingEmail, setUpdatingEmail] = useState<string | null>(null);
+    const [fullCollectionAllowed, setFullCollectionAllowed] = useState(true);
+
+    // Form to add/authorize an email directly
+    const [newEmail, setNewEmail] = useState('');
+    const [newRole, setNewRole] = useState<UserRole>('vendedor');
+    const [formMessage, setFormMessage] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
-        setErrorMsg(null);
         try {
-            const snap = await getDocs(collection(db, 'users'));
-            const list: UserRecord[] = [];
-            snap.forEach((docSnap) => {
-                const data = docSnap.data();
-                const email = data.email || 'Sin correo registrado';
-                const resolvedRole: UserRole = isDefaultAdminEmail(email)
-                    ? 'admin'
-                    : (data.role as UserRole) || 'visitante';
-                list.push({
-                    uid: docSnap.id,
-                    email,
-                    role: resolvedRole
-                });
-            });
-            setUsers(list);
-        } catch (err) {
-            console.error('Error al cargar usuarios:', err);
-            setErrorMsg('No se pudo cargar la lista de usuarios desde Firestore.');
+            const result = await loadAllManagedUsers(currentUserUid, currentUserEmail);
+            setUsers(result.users);
+            setFullCollectionAllowed(result.fullCollectionAllowed);
         } finally {
             setLoading(false);
         }
@@ -55,25 +44,69 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             fetchUsers();
+            setFormMessage(null);
         }
     }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleRoleChange = async (targetUid: string, newRole: UserRole) => {
-        setUpdatingUid(targetUid);
-        setErrorMsg(null);
+    const handleRoleChange = async (target: ManagedUserItem, roleToSet: UserRole) => {
+        setUpdatingEmail(target.email);
+        setFormMessage(null);
         try {
-            const userRef = doc(db, 'users', targetUid);
-            await updateDoc(userRef, { role: newRole });
-            setUsers((prev) =>
-                prev.map((u) => (u.uid === targetUid ? { ...u, role: newRole } : u))
+            await persistUserRoleAssignment(
+                target.email,
+                target.uid,
+                roleToSet,
+                currentUserUid
             );
-        } catch (err) {
-            console.error('Error al actualizar rol:', err);
-            setErrorMsg('Error al guardar el nuevo rol en Firestore.');
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.email === target.email
+                        ? { ...u, role: isDefaultAdminEmail(u.email) ? 'admin' : roleToSet }
+                        : u
+                )
+            );
         } finally {
-            setUpdatingUid(null);
+            setUpdatingEmail(null);
+        }
+    };
+
+    const handleAddEmailRole = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const cleanEmail = newEmail.trim().toLowerCase();
+        if (!cleanEmail || !cleanEmail.includes('@')) return;
+
+        const assignedRole: UserRole = isDefaultAdminEmail(cleanEmail) ? 'admin' : newRole;
+        setUpdatingEmail(cleanEmail);
+        try {
+            await persistUserRoleAssignment(
+                cleanEmail,
+                `email:${cleanEmail}`,
+                assignedRole,
+                currentUserUid
+            );
+            setUsers((prev) => {
+                const exists = prev.some((u) => u.email === cleanEmail);
+                if (exists) {
+                    return prev.map((u) =>
+                        u.email === cleanEmail ? { ...u, role: assignedRole } : u
+                    );
+                }
+                return [
+                    ...prev,
+                    {
+                        uid: `email:${cleanEmail}`,
+                        email: cleanEmail,
+                        role: assignedRole,
+                        source: 'managed'
+                    }
+                ];
+            });
+            setNewEmail('');
+            setFormMessage(`Rol "${ROLE_LABELS[assignedRole]}" asignado a ${cleanEmail}`);
+        } finally {
+            setUpdatingEmail(null);
         }
     };
 
@@ -87,7 +120,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                             Control de Roles de Usuarios (RBAC)
                         </h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Asigna permisos de Visitante, Vendedor o Administrador
+                            Asigna permisos de Visitante, Vendedor o Administrador por correo electrónico
                         </p>
                     </div>
                     <button
@@ -115,35 +148,76 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                     </div>
                 </div>
 
-                {errorMsg && (
-                    <div className="mb-3 p-2.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium">
-                        {errorMsg}
+                {/* Add / Authorize Email Form */}
+                <form
+                    onSubmit={handleAddEmailRole}
+                    className="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600"
+                >
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
+                        Autorizar o cambiar rol por correo electrónico:
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                            type="email"
+                            required
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            placeholder="correo@ejemplo.com"
+                            className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                        <select
+                            value={newRole}
+                            onChange={(e) => setNewRole(e.target.value as UserRole)}
+                            className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                        >
+                            <option value="vendedor">Vendedor</option>
+                            <option value="admin">Administrador</option>
+                            <option value="visitante">Visitante</option>
+                        </select>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-sm"
+                        >
+                            Guardar Rol
+                        </button>
                     </div>
-                )}
+                    {formMessage && (
+                        <p className="mt-2 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                            ✓ {formMessage}
+                        </p>
+                    )}
+                </form>
 
-                <div className="max-h-72 overflow-y-auto divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl">
+                {/* Users List */}
+                <div className="max-h-60 overflow-y-auto divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl">
                     {loading ? (
                         <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                            Cargando usuarios registrados...
-                        </div>
-                    ) : users.length === 0 ? (
-                        <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                            No se encontraron usuarios registrados en la colección.
+                            Cargando usuarios y permisos...
                         </div>
                     ) : (
                         users.map((u) => {
                             const isProtectedAdmin = isDefaultAdminEmail(u.email);
+                            const isSelf =
+                                (currentUserEmail &&
+                                    u.email.toLowerCase() === currentUserEmail.toLowerCase()) ||
+                                u.uid === currentUserUid;
+
                             return (
                                 <div
-                                    key={u.uid}
+                                    key={u.email}
                                     className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white dark:bg-slate-800"
                                 >
                                     <div className="min-w-0">
                                         <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                                             {u.email}{' '}
-                                            {u.uid === currentUserUid && (
+                                            {isSelf && (
                                                 <span className="text-[10px] text-blue-600 dark:text-blue-400 font-normal">
                                                     (Tú)
+                                                </span>
+                                            )}
+                                            {isProtectedAdmin && (
+                                                <span className="ml-1.5 text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+                                                    • Principal
                                                 </span>
                                             )}
                                         </div>
@@ -159,8 +233,11 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                             <button
                                                 key={r}
                                                 type="button"
-                                                disabled={updatingUid === u.uid || (isProtectedAdmin && r !== 'admin')}
-                                                onClick={() => handleRoleChange(u.uid, r)}
+                                                disabled={
+                                                    updatingEmail === u.email ||
+                                                    (isProtectedAdmin && r !== 'admin')
+                                                }
+                                                onClick={() => handleRoleChange(u, r)}
                                                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
                                                     u.role === r
                                                         ? 'bg-blue-600 text-white border-blue-600'
@@ -176,6 +253,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         })
                     )}
                 </div>
+
+                {!fullCollectionAllowed && <FirestoreRulesHelp />}
 
                 <div className="mt-4 flex justify-end">
                     <button

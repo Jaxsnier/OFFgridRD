@@ -65,6 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 isOpen={isAdminUsersModalOpen}
                 onClose={() => setIsAdminUsersModalOpen(false)}
                 currentUserUid={user?.uid}
+                currentUserEmail={user?.email}
             />
             
             <div className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

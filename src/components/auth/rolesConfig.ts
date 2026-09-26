@@ -2,6 +2,7 @@ export type UserRole = 'admin' | 'vendedor' | 'visitante';
 
 export const ADMIN_EMAILS: string[] = [
     'eligiomajestic@gmail.com',
+    'eligioestevez@hotmail.com',
     'offgridrd@gmail.com',
     'offgridrd@hotmail.com',
     'offgridrd@offgridrd.com'

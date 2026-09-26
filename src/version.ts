@@ -1,2 +1,2 @@
-// Versión v1.1.6.9: Implementación de Control de Acceso Basado en Roles (RBAC: Administrador, Vendedor y Visitante)
-export const APP_VERSION = 'v1.1.6.9';
+// Versión v1.1.7.1: Eliminación del requerimiento de PIN en la sección Cotización (control de acceso gestionado por rol RBAC)
+export const APP_VERSION = 'v1.1.7.1';

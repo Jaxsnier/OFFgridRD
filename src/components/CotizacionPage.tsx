@@ -7,10 +7,12 @@ import QuoteForm from './cotizacion/components/QuoteForm';
 import QuoteSummaryCard from './cotizacion/components/QuoteSummaryCard';
 import ClientQuoteView from './cotizacion/components/ClientQuoteView';
 import InternalBudgetView from './cotizacion/components/InternalBudgetView';
+import CotizacionPinGate from './cotizacion/components/CotizacionPinGate';
 
 export type CotizacionTab = 'config' | 'cliente' | 'interno';
 
 export const CotizacionPage: React.FC = () => {
+    const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<CotizacionTab>('config');
     const [quoteInput, setQuoteInput] = useState<QuoteInput>(DEFAULT_QUOTE_INPUT);
     const [customOverrides, setCustomOverrides] = useState<
@@ -66,6 +68,10 @@ export const CotizacionPage: React.FC = () => {
     const handleResetOverrides = () => {
         setCustomOverrides({});
     };
+
+    if (!isUnlocked) {
+        return <CotizacionPinGate onUnlock={() => setIsUnlocked(true)} />;
+    }
 
     return (
         <div className="min-h-full bg-slate-50 dark:bg-slate-900 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 transition-colors">

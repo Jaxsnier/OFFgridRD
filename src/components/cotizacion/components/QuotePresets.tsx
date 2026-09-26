@@ -6,9 +6,15 @@ interface QuotePresetsProps {
     onSelectPreset: (preset: QuotePreset) => void;
     currentKw: number;
     currentKwp: number;
+    currentIncludeBatteries?: boolean;
 }
 
-export const QuotePresets: React.FC<QuotePresetsProps> = ({ onSelectPreset, currentKw, currentKwp }) => {
+export const QuotePresets: React.FC<QuotePresetsProps> = ({
+    onSelectPreset,
+    currentKw,
+    currentKwp,
+    currentIncludeBatteries = false
+}) => {
     return (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
             <div className="flex items-center justify-between mb-3">
@@ -23,7 +29,10 @@ export const QuotePresets: React.FC<QuotePresetsProps> = ({ onSelectPreset, curr
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
                 {QUOTE_PRESETS.map((preset) => {
-                    const isSelected = currentKw === preset.inverterKw && currentKwp === preset.kwp;
+                    const isSelected =
+                        currentKw === preset.inverterKw &&
+                        currentKwp === preset.kwp &&
+                        Boolean(currentIncludeBatteries) === Boolean(preset.includeBatteries);
                     return (
                         <button
                             key={preset.id}

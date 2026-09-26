@@ -52,6 +52,7 @@ export interface QuoteCalculationResult {
     profitMarginPercent: number;
     panelCount: number;
     panelWattage: number;
+    estimatedDailyKwh: number;
     estimatedMonthlyKwh: number;
     specs: {
         inverterBrand: string;

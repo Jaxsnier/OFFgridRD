@@ -6,6 +6,8 @@ Panel Solar 610w = 110 usd
 Inversor hibrido ion 8kw = 1900 usd
 Inversor hibrido ion 16kw = 2850 usd
 Inversor hibrido deye 6kw = 1800 usd
+Bateria American 5kw = 850 usd
+Bateria American 10kw = 1700 usd
 Bateria American 15kw = 2400 usd
 Perfil de aluminio = 35 usd
 Mid clamp = 2 usd
@@ -36,9 +38,11 @@ Tubo emt de 1' = 10 usd
 ==================================================
 
 Margen de ganancia min = 15%
-Margen de ganancia max = 30%
+Margen de ganancia predeterminado = 30%
+Margen de ganancia max = 40%
 Transporte & Logística = 1% del total
 Mano de obra y supervision = 5% del total
 Perfil de aluminio (riel 19 pies) = 1 unidad por cada 2.5 paneles
 End clamp = 2 al inicio y 2 al final de cada string (4 por string)
 Mid clamp = 2 en medio de cada 2 paneles
+Horas de sol diarias promedio = 4.5 horas/día (multiplicador de producción solar)

@@ -1,0 +1,12 @@
+==================================================
+1. DATOS DE LA EMPRESA
+==================================================
+
+Nombre comercial = OFFgridRD
+Razón social = OFFgridRD SRL
+Eslogan = Soluciones de Energía Solar Fotovoltaica & Almacenamiento
+RNC = 0-3105-44738-1
+Dirección = Calle León Jiménez No. 117, Plaza Don Julio, Segundo Nivel, Local 2A-1
+Teléfono / WhatsApp = 829-639-2616
+Correo electrónico = OFFgridRD@hotmail.com / OFFgridRD@gmail.com / OFFgridRD@offgridrd.com
+Sitio web = https://offgridrd.vercel.app/

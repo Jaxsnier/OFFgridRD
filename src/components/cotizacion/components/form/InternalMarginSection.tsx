@@ -2,6 +2,7 @@ import React from 'react';
 import { QuoteInput } from '../../types';
 import {
     MARGEN_GANANCIA_MIN_PERCENT,
+    MARGEN_GANANCIA_DEFAULT_PERCENT,
     MARGEN_GANANCIA_MAX_PERCENT,
     TRANSPORTE_LOGISTICA_PERCENT,
     MANO_OBRA_SUPERVISION_PERCENT
@@ -16,9 +17,7 @@ export const InternalMarginSection: React.FC<InternalMarginSectionProps> = ({ in
     const currentMargin =
         input.profitMarginPercent !== undefined
             ? input.profitMarginPercent
-            : input.quality === 'premium'
-            ? MARGEN_GANANCIA_MAX_PERCENT
-            : MARGEN_GANANCIA_MIN_PERCENT;
+            : MARGEN_GANANCIA_DEFAULT_PERCENT;
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -39,7 +38,7 @@ export const InternalMarginSection: React.FC<InternalMarginSectionProps> = ({ in
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                {/* Control de Margen de Ganancia (Min 15% - Max 30%) */}
+                {/* Control de Margen de Ganancia (Min 15% - Max 40%, Predeterminado 30%) */}
                 <div>
                     <div className="flex items-center justify-between mb-2">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-200">
@@ -60,7 +59,7 @@ export const InternalMarginSection: React.FC<InternalMarginSectionProps> = ({ in
                             const val = parseFloat(e.target.value);
                             onChange({
                                 profitMarginPercent: val,
-                                quality: val >= 25 ? 'premium' : 'normal'
+                                quality: val >= 30 ? 'premium' : 'normal'
                             });
                         }}
                         className="w-full accent-emerald-600 cursor-pointer"
@@ -87,17 +86,17 @@ export const InternalMarginSection: React.FC<InternalMarginSectionProps> = ({ in
                             type="button"
                             onClick={() =>
                                 onChange({
-                                    profitMarginPercent: 22,
+                                    profitMarginPercent: MARGEN_GANANCIA_DEFAULT_PERCENT,
                                     quality: 'normal'
                                 })
                             }
                             className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition ${
-                                currentMargin === 22
+                                currentMargin === MARGEN_GANANCIA_DEFAULT_PERCENT
                                     ? 'bg-emerald-600 text-white border-emerald-600'
                                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-600'
                             }`}
                         >
-                            Medio (22%)
+                            Base ({MARGEN_GANANCIA_DEFAULT_PERCENT}%)
                         </button>
                         <button
                             type="button"

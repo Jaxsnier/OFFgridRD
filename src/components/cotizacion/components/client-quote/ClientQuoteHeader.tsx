@@ -1,6 +1,7 @@
 import React from 'react';
 import { QuoteCalculationResult, QuoteInput } from '../../types';
 import { QUALITY_DETAILS } from '../../constants';
+import { DATOS_EMPRESA } from '../../pricing';
 
 interface ClientQuoteHeaderProps {
     input: QuoteInput;
@@ -27,13 +28,14 @@ export const ClientQuoteHeader: React.FC<ClientQuoteHeaderProps> = ({
                                 OFFgrid<span className="text-blue-600">RD</span>
                             </h1>
                             <p className="text-xs text-slate-500 font-medium">
-                                Soluciones de Energía Solar Fotovoltaica & Almacenamiento
+                                {DATOS_EMPRESA.eslogan}
                             </p>
                         </div>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1.5 leading-snug">
-                        RNC: 1-32-XXXXX-X • Santo Domingo, República Dominicana<br />
-                        Contacto: (829) 555-SOLAR • info@offgridrd.com
+                        <strong>RNC:</strong> {DATOS_EMPRESA.rnc} • <strong>Tel/WhatsApp:</strong> {DATOS_EMPRESA.telefonoWhatsapp}<br />
+                        <strong>Dirección:</strong> {DATOS_EMPRESA.direccion}<br />
+                        <strong>Correo:</strong> {DATOS_EMPRESA.correoTexto} • <strong>Web:</strong> {DATOS_EMPRESA.sitioWeb}
                     </p>
                 </div>
 
@@ -84,7 +86,9 @@ export const ClientQuoteHeader: React.FC<ClientQuoteHeaderProps> = ({
                         </div>
                         <div>
                             <span className="text-slate-500">Generación: </span>
-                            <span className="font-bold text-emerald-600">~{calculation.estimatedMonthlyKwh} kWh/mes</span>
+                            <span className="font-bold text-emerald-600">
+                                ~{calculation.estimatedMonthlyKwh} kWh/mes (~{calculation.estimatedDailyKwh} kWh/día)
+                            </span>
                         </div>
                     </div>
                 </div>

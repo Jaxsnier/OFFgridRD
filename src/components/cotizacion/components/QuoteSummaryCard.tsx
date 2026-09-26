@@ -39,13 +39,16 @@ export const QuoteSummaryCard: React.FC<QuoteSummaryCardProps> = ({
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="bg-white/5 rounded-xl p-3 border border-white/5">
-                    <span className="text-xs text-slate-400 block">Producción Estimada</span>
+                    <span className="text-xs text-slate-400 block">Producción (4.5h sol/día)</span>
                     <div className="flex items-baseline gap-1 mt-0.5">
                         <span className="text-lg font-bold text-amber-400">
                             ~{calculation.estimatedMonthlyKwh}
                         </span>
                         <span className="text-xs text-slate-300">kWh/mes</span>
                     </div>
+                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                        ~{calculation.estimatedDailyKwh} kWh/día
+                    </span>
                 </div>
 
                 <div className="bg-white/5 rounded-xl p-3 border border-white/5">

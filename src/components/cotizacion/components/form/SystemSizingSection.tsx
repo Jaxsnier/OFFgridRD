@@ -2,10 +2,12 @@ import React from 'react';
 import { QuoteInput } from '../../types';
 import {
     CATALOGO_INVERSORES,
+    CATALOGO_BATERIAS,
     PANEL_SOLAR_610W_WATTS,
     PANEL_SOLAR_610W_USD,
     BATERIA_AMERICAN_15KW_USD,
-    BATERIA_AMERICAN_15KW_KWH
+    HORAS_SOL_DIARIAS_PROMEDIO,
+    DIAS_PROMEDIO_MES
 } from '../../pricing';
 
 interface SystemSizingSectionProps {
@@ -15,7 +17,6 @@ interface SystemSizingSectionProps {
 
 export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input, onChange }) => {
     const panelCount = Math.max(1, Math.ceil((input.peakPowerKwp * 1000) / PANEL_SOLAR_610W_WATTS));
-    const batteryUnits = Math.max(1, Math.ceil(input.batteryKwh / BATERIA_AMERICAN_15KW_KWH));
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -30,7 +31,7 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                         1. Componentes y Precios Específicos
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Inversores híbridos, Panel Solar 610W ($110 USD) y Batería American 15kW ($2,400 USD)
+                        Inversores híbridos, Panel Solar 610W ($110 USD) y Baterías American (5kW / 10kW / 15kW)
                     </p>
                 </div>
             </div>
@@ -161,6 +162,12 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                             </span>
                         </div>
                         <div className="flex justify-between">
+                            <span>Producción ({HORAS_SOL_DIARIAS_PROMEDIO}h sol/día):</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                ~{(((panelCount * PANEL_SOLAR_610W_WATTS) / 1000) * HORAS_SOL_DIARIAS_PROMEDIO).toFixed(1)} kWh/día (~{Math.round(((panelCount * PANEL_SOLAR_610W_WATTS) / 1000) * HORAS_SOL_DIARIAS_PROMEDIO * DIAS_PROMEDIO_MES)} kWh/mes)
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
                             <span>Costo base paneles (${PANEL_SOLAR_610W_USD} USD c/u):</span>
                             <span className="font-mono font-bold text-slate-900 dark:text-white">
                                 ${(panelCount * PANEL_SOLAR_610W_USD).toLocaleString()} USD
@@ -170,7 +177,7 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                 </div>
             </div>
 
-            {/* Batería American 15kW ($2,400 USD) */}
+            {/* Baterías American (5kW / 10kW / 15kW) */}
             <div className="mt-5 pt-5 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
@@ -180,36 +187,46 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                             onChange={(e) =>
                                 onChange({
                                     includeBatteries: e.target.checked,
-                                    batteryKwh: e.target.checked ? Math.max(15, input.batteryKwh) : input.batteryKwh
+                                    batteryKwh: e.target.checked ? (input.batteryKwh > 0 ? input.batteryKwh : 15) : input.batteryKwh
                                 })
                             }
                             className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
                         />
                         <span>
-                            Incluir Batería American 15kW (${BATERIA_AMERICAN_15KW_USD.toLocaleString()} USD por unidad de 15 kWh)
+                            Incluir Batería American LiFePO4 (5kW = $850 • 10kW = $1,700 • 15kW = $2,400 USD)
                         </span>
                     </label>
 
                     {input.includeBatteries && (
-                        <div className="flex items-center gap-2">
-                            {[1, 2, 3].map((units) => {
-                                const kwh = units * BATERIA_AMERICAN_15KW_KWH;
-                                const isSelected = batteryUnits === units;
+                        <div className="flex flex-wrap items-center gap-2">
+                            {CATALOGO_BATERIAS.map((bat) => {
+                                const isSelected = input.batteryKwh === bat.capacityKwh;
                                 return (
                                     <button
-                                        key={units}
+                                        key={bat.id}
                                         type="button"
-                                        onClick={() => onChange({ batteryKwh: kwh })}
-                                        className={`px-3 py-1 rounded-lg text-xs font-bold border transition ${
+                                        onClick={() => onChange({ batteryKwh: bat.capacityKwh })}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
                                             isSelected
                                                 ? 'bg-blue-600 text-white border-blue-600'
                                                 : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600'
                                         }`}
                                     >
-                                        {units}x ({kwh} kWh — ${(units * BATERIA_AMERICAN_15KW_USD).toLocaleString()} USD)
+                                        {bat.name} (${bat.priceUsd.toLocaleString()} USD)
                                     </button>
                                 );
                             })}
+                            <button
+                                type="button"
+                                onClick={() => onChange({ batteryKwh: 30 })}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
+                                    input.batteryKwh === 30
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600'
+                                }`}
+                            >
+                                2x American 15kW (30 kWh — ${(2 * BATERIA_AMERICAN_15KW_USD).toLocaleString()} USD)
+                            </button>
                         </div>
                     )}
                 </div>

@@ -28,7 +28,7 @@ export const SOLAR_KITS: SolarKit[] = [
         description: 'Ideal para hogares con consumo moderado que buscan iniciar su independencia energética.',
         cost: 165000,
         power: '3.6 kWp',
-        estimatedProduction: '400 - 450 kWh/mes',
+        estimatedProduction: '~486 kWh/mes (16.2 kWh/día)',
         features: [
             '6 Paneles solares de 600W',
             'Inversor de 3kW',
@@ -44,7 +44,7 @@ export const SOLAR_KITS: SolarKit[] = [
         description: 'Nuestra opción más popular. Diseñada para cubrir el consumo de un hogar dominicano promedio.',
         cost: 225000,
         power: '5.4 kWp',
-        estimatedProduction: '600 - 680 kWh/mes',
+        estimatedProduction: '~729 kWh/mes (24.3 kWh/día)',
         features: [
             '9 Paneles solares de 600W',
             'Inversor de 5kW',
@@ -60,7 +60,7 @@ export const SOLAR_KITS: SolarKit[] = [
         description: 'Para hogares grandes o negocios con alto consumo. Máxima potencia y ahorro garantizado.',
         cost: 410000,
         power: '10.8 kWp',
-        estimatedProduction: '1,200 - 1,350 kWh/mes',
+        estimatedProduction: '~1,458 kWh/mes (48.6 kWh/día)',
         features: [
             '18 Paneles solares de 600W',
             'Inversor de 10kW',

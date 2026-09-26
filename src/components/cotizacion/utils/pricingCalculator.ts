@@ -2,7 +2,10 @@ import { BudgetDivisionItem, QuoteCalculationResult, QuoteInput } from '../types
 import { QUALITY_DETAILS } from '../constants';
 import {
     MARGEN_GANANCIA_MIN_PERCENT,
-    MARGEN_GANANCIA_MAX_PERCENT
+    MARGEN_GANANCIA_DEFAULT_PERCENT,
+    MARGEN_GANANCIA_MAX_PERCENT,
+    HORAS_SOL_DIARIAS_PROMEDIO,
+    DIAS_PROMEDIO_MES
 } from '../pricing';
 import { calculatePanelsPartida } from './calculators/calculatePanelsPartida';
 import { calculateInverterPartida } from './calculators/calculateInverterPartida';
@@ -20,11 +23,11 @@ export const calculateQuote = (
 ): QuoteCalculationResult => {
     const qConfig = QUALITY_DETAILS[input.quality];
 
-    // Determinar margen de ganancia dentro del rango [Margen de ganancia min = 15%, Margen de ganancia max = 30%]
-    const defaultMargin =
-        input.quality === 'premium' ? MARGEN_GANANCIA_MAX_PERCENT : MARGEN_GANANCIA_MIN_PERCENT;
+    // Determinar margen de ganancia dentro del rango [15% min — 40% max, predeterminado 30%]
     const rawMargin =
-        input.profitMarginPercent !== undefined ? input.profitMarginPercent : defaultMargin;
+        input.profitMarginPercent !== undefined
+            ? input.profitMarginPercent
+            : MARGEN_GANANCIA_DEFAULT_PERCENT;
     const clampedMarginPercent = Math.min(
         MARGEN_GANANCIA_MAX_PERCENT,
         Math.max(MARGEN_GANANCIA_MIN_PERCENT, rawMargin)
@@ -109,9 +112,12 @@ export const calculateQuote = (
     const profitMarginPercent =
         totalInternalCost > 0 ? (estimatedProfit / totalInternalCost) * 100 : 0;
 
-    // Producción mensual estimada en RD (4.5 HSP * 30 días * 0.82 PR)
+    // Producción solar estimada usando el multiplicador de 4.5 horas de sol diarias promedio
     const actualSystemKwp = (panelCount * panelWattage) / 1000;
-    const estimatedMonthlyKwh = Math.round(actualSystemKwp * 4.5 * 30 * 0.82);
+    const estimatedDailyKwh = +(actualSystemKwp * HORAS_SOL_DIARIAS_PROMEDIO).toFixed(1);
+    const estimatedMonthlyKwh = Math.round(
+        actualSystemKwp * HORAS_SOL_DIARIAS_PROMEDIO * DIAS_PROMEDIO_MES
+    );
 
     return {
         items: finalItems,
@@ -121,6 +127,7 @@ export const calculateQuote = (
         profitMarginPercent,
         panelCount,
         panelWattage,
+        estimatedDailyKwh,
         estimatedMonthlyKwh,
         specs: {
             inverterBrand: inverterResult.inverterBrandText,

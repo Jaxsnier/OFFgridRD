@@ -7,8 +7,42 @@ export const INVERSOR_HIBRIDO_DEYE_6KW_USD = 1800;
 export const INVERSOR_HIBRIDO_ION_8KW_USD = 1900;
 export const INVERSOR_HIBRIDO_ION_16KW_USD = 2850;
 
+export const BATERIA_AMERICAN_5KW_KWH = 5;
+export const BATERIA_AMERICAN_5KW_USD = 850;
+
+export const BATERIA_AMERICAN_10KW_KWH = 10;
+export const BATERIA_AMERICAN_10KW_USD = 1700;
+
 export const BATERIA_AMERICAN_15KW_KWH = 15;
 export const BATERIA_AMERICAN_15KW_USD = 2400;
+
+export interface CatalogBatteryModel {
+    id: 'american_5kw' | 'american_10kw' | 'american_15kw';
+    name: string;
+    capacityKwh: number;
+    priceUsd: number;
+}
+
+export const CATALOGO_BATERIAS: CatalogBatteryModel[] = [
+    {
+        id: 'american_5kw',
+        name: 'Batería American 5kW',
+        capacityKwh: BATERIA_AMERICAN_5KW_KWH,
+        priceUsd: BATERIA_AMERICAN_5KW_USD
+    },
+    {
+        id: 'american_10kw',
+        name: 'Batería American 10kW',
+        capacityKwh: BATERIA_AMERICAN_10KW_KWH,
+        priceUsd: BATERIA_AMERICAN_10KW_USD
+    },
+    {
+        id: 'american_15kw',
+        name: 'Batería American 15kW',
+        capacityKwh: BATERIA_AMERICAN_15KW_KWH,
+        priceUsd: BATERIA_AMERICAN_15KW_USD
+    }
+];
 
 export const PERFIL_ALUMINIO_USD = 35;
 export const MID_CLAMP_USD = 2;

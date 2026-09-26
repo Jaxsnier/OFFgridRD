@@ -1,5 +1,6 @@
 import React from 'react';
 import { AnimateOnScroll } from '../ui/AnimateOnScroll';
+import { DATOS_EMPRESA } from '../cotizacion/pricing';
 
 const ContactSection: React.FC = () => {
     return (
@@ -44,8 +45,8 @@ const ContactSection: React.FC = () => {
                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#2E8B57] dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-[#1E1E1E] dark:text-slate-200">Teléfono</h4>
-                                    <a href="tel:+18091234567" className="text-[#5B5B5B] dark:text-slate-400 hover:text-[#F76814]">(809) 123-4567</a>
+                                    <h4 className="font-semibold text-[#1E1E1E] dark:text-slate-200">Teléfono / WhatsApp</h4>
+                                    <a href={`tel:${DATOS_EMPRESA.telefonoHref}`} className="text-[#5B5B5B] dark:text-slate-400 hover:text-[#F76814]">{DATOS_EMPRESA.telefonoWhatsapp}</a>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -54,7 +55,13 @@ const ContactSection: React.FC = () => {
                                 </div>
                                 <div>
                                     <h4 className="font-semibold text-[#1E1E1E] dark:text-slate-200">Correo Electrónico</h4>
-                                    <a href="mailto:cotizaciones@offgridrd.com" className="text-[#5B5B5B] dark:text-slate-400 hover:text-[#F76814]">cotizaciones@offgridrd.com</a>
+                                    <div className="flex flex-col text-sm">
+                                        {DATOS_EMPRESA.correos.map((correo) => (
+                                            <a key={correo} href={`mailto:${correo}`} className="text-[#5B5B5B] dark:text-slate-400 hover:text-[#F76814]">
+                                                {correo}
+                                            </a>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -62,8 +69,8 @@ const ContactSection: React.FC = () => {
                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#2E8B57] dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657l-4.243-4.243a1 1 0 00-1.414 0l-4.243 4.243a1 1 0 001.414 1.414L12 13.414l2.828 2.829a1 1 0 001.414-1.414z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" /></svg>
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-[#1E1E1E] dark:text-slate-200">Dirección</h4>
-                                    <p className="text-[#5B5B5B] dark:text-slate-400">Av. Principal 123, Santiago,<br/>República Dominicana</p>
+                                    <h4 className="font-semibold text-[#1E1E1E] dark:text-slate-200">Dirección (RNC: {DATOS_EMPRESA.rnc})</h4>
+                                    <p className="text-[#5B5B5B] dark:text-slate-400">{DATOS_EMPRESA.direccion}</p>
                                 </div>
                             </div>
                         </div>

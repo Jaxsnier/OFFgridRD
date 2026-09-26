@@ -44,7 +44,7 @@ export const CotizacionPage: React.FC = () => {
             peakPowerKwp: preset.kwp,
             conduitMeters: preset.conduitMeters,
             quality: preset.recommendedQuality,
-            includeBatteries: preset.includeBatteries ?? prev.includeBatteries,
+            includeBatteries: Boolean(preset.includeBatteries),
             batteryKwh: preset.batteryKwh ?? prev.batteryKwh,
             protectionStrings: preset.protectionStrings ?? prev.protectionStrings
         }));
@@ -134,6 +134,7 @@ export const CotizacionPage: React.FC = () => {
                             onSelectPreset={handleSelectPreset}
                             currentKw={quoteInput.inverterCapacityKw}
                             currentKwp={quoteInput.peakPowerKwp}
+                            currentIncludeBatteries={quoteInput.includeBatteries}
                         />
 
                         {/* Main Grid: Form + Summary Card */}

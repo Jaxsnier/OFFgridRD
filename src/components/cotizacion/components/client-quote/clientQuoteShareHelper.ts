@@ -1,6 +1,7 @@
 import { QuoteCalculationResult, QuoteInput } from '../../types';
 import { formatCurrency } from '../../utils/pricingCalculator';
 import { QUALITY_DETAILS } from '../../constants';
+import { DATOS_EMPRESA } from '../../pricing';
 
 export const buildClientQuoteShareText = (
     input: QuoteInput,
@@ -8,7 +9,8 @@ export const buildClientQuoteShareText = (
 ): string => {
     const qDetails = QUALITY_DETAILS[input.quality];
 
-    return `☀️ *COTIZACIÓN SOLAR OFFgridRD* ☀️
+    return `☀️ *COTIZACIÓN SOLAR ${DATOS_EMPRESA.nombreComercial}* ☀️
+🏢 *${DATOS_EMPRESA.razonSocial}* | RNC: ${DATOS_EMPRESA.rnc}
 📄 *Nº Cotización:* ${input.client.quoteNumber}
 👤 *Cliente:* ${input.client.name}
 📍 *Ubicación:* ${input.client.location || 'República Dominicana'}
@@ -17,7 +19,7 @@ export const buildClientQuoteShareText = (
 • Inversor: ${input.inverterCapacityKw} kW (${calculation.specs.inverterBrand})
 • Potencia Solar: ${input.peakPowerKwp.toFixed(2)} kWp (${calculation.panelCount} paneles de ${calculation.panelWattage}W)
 • Calidad: ${qDetails.name}
-• Generación Estimada: ~${calculation.estimatedMonthlyKwh} kWh/mes
+• Generación Estimada (4.5h sol/día): ~${calculation.estimatedDailyKwh} kWh/día (~${calculation.estimatedMonthlyKwh} kWh/mes)
 • Canalización: ${input.conduitMeters} metros incluidos
 • Protecciones: DC/AC de grado industrial + Puesta a tierra
 ${input.includeBatteries ? `• Batería: ${input.batteryKwh} kWh Litio LiFePO4\n` : ''}
@@ -27,7 +29,11 @@ ${input.includeBatteries ? `• Batería: ${input.batteryKwh} kWh Litio LiFePO4\
 🛡️ *GARANTÍAS:*
 • Inversor: ${calculation.specs.warrantyInverter}
 • Paneles: ${calculation.specs.warrantyPanels}
-• Instalación y soporte técnico garantizado`;
+• Instalación y soporte técnico garantizado
+
+📞 *Contacto:* ${DATOS_EMPRESA.telefonoWhatsapp}
+📍 *Dirección:* ${DATOS_EMPRESA.direccion}
+🌐 *Web:* ${DATOS_EMPRESA.sitioWeb}`;
 };
 
 export const buildClientWhatsAppUrl = (

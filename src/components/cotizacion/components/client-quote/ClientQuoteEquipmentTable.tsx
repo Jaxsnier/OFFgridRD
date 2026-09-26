@@ -64,7 +64,7 @@ export const ClientQuoteEquipmentTable: React.FC<ClientQuoteEquipmentTableProps>
                             <tr>
                                 <td className="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">Almacenamiento Litio</td>
                                 <td className="py-2.5 px-3 leading-snug">
-                                    Batería American 15kW LiFePO4 ({input.batteryKwh} kWh total) con BMS inteligente integrado.
+                                    Batería American {input.batteryKwh <= 15 ? `${input.batteryKwh}kW` : '15kW'} LiFePO4 ({input.batteryKwh} kWh total) con BMS inteligente integrado.
                                 </td>
                                 <td className="py-2.5 px-3 text-center font-medium whitespace-nowrap">{input.batteryKwh} kWh</td>
                             </tr>

@@ -1,6 +1,7 @@
 import {
     INVERSOR_HIBRIDO_DEYE_6KW_USD,
     INVERSOR_HIBRIDO_ION_8KW_USD,
+    INVERSOR_HIBRIDO_ION_12KW_USD,
     INVERSOR_HIBRIDO_ION_16KW_USD
 } from '../../pricing';
 import { BudgetDivisionItem, QuoteInput } from '../../types';
@@ -25,6 +26,10 @@ export const calculateInverterPartida = (
     } else if (input.inverterCapacityKw <= 8) {
         modelName = 'Inversor híbrido Ion 8kW';
         unitPriceUsd = INVERSOR_HIBRIDO_ION_8KW_USD;
+        quantity = 1;
+    } else if (input.inverterCapacityKw <= 12) {
+        modelName = 'Inversor híbrido Ion 12kW';
+        unitPriceUsd = INVERSOR_HIBRIDO_ION_12KW_USD;
         quantity = 1;
     } else if (input.inverterCapacityKw <= 16) {
         modelName = 'Inversor híbrido Ion 16kW';

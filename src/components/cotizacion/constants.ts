@@ -93,6 +93,18 @@ export const QUOTE_PRESETS: QuotePreset[] = [
         protectionStrings: 2
     },
     {
+        id: 'p12kw_ion',
+        label: '12 kW / 12.20 kWp',
+        description: 'Inversor híbrido Ion 12kW ($2,450) + 20 Paneles 610W',
+        inverterKw: 12,
+        kwp: 12.2,
+        conduitMeters: 33,
+        recommendedQuality: 'normal',
+        includeBatteries: false,
+        batteryKwh: 15,
+        protectionStrings: 2
+    },
+    {
         id: 'p16kw_ion',
         label: '16 kW / 15.86 kWp',
         description: 'Inversor híbrido Ion 16kW ($2,850) + 26 Paneles 610W',
@@ -122,7 +134,7 @@ export const QUALITY_DETAILS = {
     normal: {
         name: 'Estándar',
         badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-300 dark:border-blue-700',
-        inverterBrand: 'Inversor Híbrido Deye 6kW / Ion 8kW / Ion 16kW',
+        inverterBrand: 'Inversor Híbrido Deye 6kW / Ion 8kW / Ion 12kW / Ion 16kW',
         panelsBrand: 'Panel Solar Monocristalino 610W',
         warrantyInverter: '5 a 10 años de garantía de fábrica',
         warrantyPanels: '12 años garantía de producto / 25 años generación lineal',
@@ -140,7 +152,7 @@ export const QUALITY_DETAILS = {
     premium: {
         name: 'Premium / Completo',
         badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300 dark:border-amber-700',
-        inverterBrand: 'Inversor Híbrido Ion 8kW / Ion 16kW / Deye 6kW',
+        inverterBrand: 'Inversor Híbrido Ion 8kW / Ion 12kW / Ion 16kW / Deye 6kW',
         panelsBrand: 'Panel Solar 610W N-Type Alta Eficiencia',
         warrantyInverter: '10 años de garantía respaldada',
         warrantyPanels: '25 años garantía de producto / 30 años generación lineal',

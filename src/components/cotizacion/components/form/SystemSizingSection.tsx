@@ -5,6 +5,8 @@ import {
     CATALOGO_BATERIAS,
     PANEL_SOLAR_610W_WATTS,
     PANEL_SOLAR_610W_USD,
+    BATERIA_AMERICAN_5KW_USD,
+    BATERIA_AMERICAN_10KW_USD,
     BATERIA_AMERICAN_15KW_USD,
     HORAS_SOL_DIARIAS_PROMEDIO,
     DIAS_PROMEDIO_MES
@@ -193,7 +195,7 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                             className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
                         />
                         <span>
-                            Incluir Batería American LiFePO4 (5kW = $850 • 10kW = $1,700 • 15kW = $2,400 USD)
+                            Incluir Batería American LiFePO4 (5kW = ${BATERIA_AMERICAN_5KW_USD.toLocaleString()} • 10kW = ${BATERIA_AMERICAN_10KW_USD.toLocaleString()} • 15kW = ${BATERIA_AMERICAN_15KW_USD.toLocaleString()} USD)
                         </span>
                     </label>
 

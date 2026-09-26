@@ -4,10 +4,11 @@
 
 Panel Solar 610w = 110 usd
 Inversor hibrido ion 8kw = 1900 usd
+Inversor hibrido ion 12kw = 2450 usd
 Inversor hibrido ion 16kw = 2850 usd
 Inversor hibrido deye 6kw = 1800 usd
-Bateria American 5kw = 850 usd
-Bateria American 10kw = 1700 usd
+Bateria American 5kw = 900 usd
+Bateria American 10kw = 1800 usd
 Bateria American 15kw = 2400 usd
 Perfil de aluminio = 35 usd
 Mid clamp = 2 usd

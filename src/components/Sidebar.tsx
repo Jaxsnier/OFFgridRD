@@ -5,6 +5,8 @@ import { useClientDataManager } from '../hooks/useClientDataManager';
 import PotencialesControls from './sidebar/PotencialesControls';
 import { useAuth } from '../hooks/useAuth';
 import LoginModal from './LoginModal';
+import AdminUsersModal from './auth/AdminUsersModal';
+import { ROLE_LABELS, ROLE_BADGE_CLASSES, canAccessView } from './auth/rolesConfig';
 import { APP_VERSION } from '../version';
 
 interface SidebarProps {
@@ -30,8 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     clientDataManager,
     auth
 }) => {
-    const { user, login, logout, register, resendVerificationEmail, reloadUser } = auth;
+    const { user, role, login, logout, register, resendVerificationEmail, reloadUser } = auth;
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isAdminUsersModalOpen, setIsAdminUsersModalOpen] = useState(false);
     const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
     const handleResendEmail = async () => {
@@ -57,6 +60,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClose={() => setIsLoginModalOpen(false)} 
                 onLogin={login}
                 onRegister={register} 
+            />
+            <AdminUsersModal
+                isOpen={isAdminUsersModalOpen}
+                onClose={() => setIsAdminUsersModalOpen(false)}
+                currentUserUid={user?.uid}
             />
             
             <div className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -88,9 +96,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <div className="w-8 h-8 min-w-[2rem] rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
                                                 {user.email?.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate" title={user.email || ''}>
-                                                {user.email}
-                                            </span>
+                                            <div className="min-w-0">
+                                                <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 truncate" title={user.email || ''}>
+                                                    {user.email}
+                                                </span>
+                                                <span className={`inline-block mt-0.5 text-[10px] font-bold px-2 py-0.2 rounded-full border ${ROLE_BADGE_CLASSES[role]}`}>
+                                                    Rol: {ROLE_LABELS[role]}
+                                                </span>
+                                            </div>
                                         </div>
                                         <button 
                                             onClick={logout} 
@@ -99,6 +112,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             Salir
                                         </button>
                                     </div>
+
+                                    {role === 'admin' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAdminUsersModalOpen(true)}
+                                            className="mt-1 w-full py-1.5 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                            </svg>
+                                            Gestionar Roles de Usuarios
+                                        </button>
+                                    )}
 
                                     {/* Verification Warning */}
                                     {!user.emailVerified && (
@@ -158,7 +184,21 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('cotizacion'); onClose(); }} className={`flex items-center justify-between p-3 rounded-lg font-semibold ${activeView === 'cotizacion' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            onNavClick('cotizacion');
+                                            onClose();
+                                        }}
+                                        className={`flex items-center justify-between p-3 rounded-lg font-semibold ${
+                                            activeView === 'cotizacion'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                                                : !canAccessView(role, 'cotizacion')
+                                                ? 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
                                         <div className="flex items-center gap-2">
                                             <span>Cotización</span>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -166,13 +206,37 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             </svg>
                                         </div>
                                         <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                                            PIN
+                                            {canAccessView(role, 'cotizacion') ? 'PIN' : 'Vendedor/Admin'}
                                         </span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); onNavClick('potenciales'); onClose(); }} className={`flex items-center p-3 rounded-lg font-semibold ${activeView === 'potenciales' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-                                        Base De Datos
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            onNavClick('potenciales');
+                                            onClose();
+                                        }}
+                                        className={`flex items-center justify-between p-3 rounded-lg font-semibold ${
+                                            activeView === 'potenciales'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                                                : !canAccessView(role, 'potenciales')
+                                                ? 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span>Base De Datos</span>
+                                            {!canAccessView(role, 'potenciales') && (
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-300">
+                                            Solo Admin
+                                        </span>
                                     </a>
                                 </li>
                                 <li>
@@ -183,7 +247,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             </ul>
                         </nav>
                         
-                        {activeView === 'potenciales' && (
+                        {activeView === 'potenciales' && canAccessView(role, 'potenciales') && (
                             <PotencialesControls
                                 isDatabaseUnlocked={isDatabaseUnlocked}
                                 isSettingCenter={isSettingCenter}

@@ -1,14 +1,16 @@
 import React from 'react';
 import { User } from 'firebase/auth';
+import { UserRole, ROLE_LABELS, ROLE_BADGE_CLASSES } from './auth/rolesConfig';
 
 interface HeaderProps {
     onMenuClick: () => void;
     isDarkMode: boolean;
     toggleDarkMode: () => void;
     user: User | null;
+    role: UserRole;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, isDarkMode, toggleDarkMode, user }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, isDarkMode, toggleDarkMode, user, role }) => {
     return (
         <header className="flex-shrink-0 bg-white dark:bg-slate-800 shadow z-40 transition-colors duration-300">
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,14 +35,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, isDarkMode, toggleDarkMode
                                 <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 hidden sm:block max-w-[100px] truncate">
                                     {user.email?.split('@')[0]}
                                 </span>
-                                <span className="sm:hidden text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 w-5 h-5 flex items-center justify-center rounded-full">
-                                    {user.email?.charAt(0).toUpperCase()}
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ROLE_BADGE_CLASSES[role]}`}>
+                                    {ROLE_LABELS[role]}
                                 </span>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-full border border-slate-200 dark:border-slate-600 transition-all">
                                 <div className="h-2 w-2 rounded-full bg-slate-400"></div>
-                                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:block">Invitado</span>
+                                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:block">Visitante</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>

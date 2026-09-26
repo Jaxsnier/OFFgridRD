@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { 
     User, 
     signInWithEmailAndPassword, 
@@ -9,15 +9,61 @@ import {
     sendEmailVerification,
     reload
 } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { UserRole, isDefaultAdminEmail } from '../components/auth/rolesConfig';
 
 export const useAuth = () => {
     const [user, setUser] = useState<User | null>(null);
+    const [role, setRole] = useState<UserRole>('visitante');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
-            setLoading(false);
+            if (!currentUser) {
+                setRole('visitante');
+                setLoading(false);
+                return;
+            }
+
+            const defaultRole: UserRole = isDefaultAdminEmail(currentUser.email) ? 'admin' : 'visitante';
+
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const snap = await getDoc(userRef);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const storedRole = data?.role as UserRole | undefined;
+                    const resolvedRole: UserRole = isDefaultAdminEmail(currentUser.email)
+                        ? 'admin'
+                        : storedRole === 'admin' || storedRole === 'vendedor' || storedRole === 'visitante'
+                        ? storedRole
+                        : defaultRole;
+
+                    setRole(resolvedRole);
+
+                    if (data?.email !== currentUser.email || data?.role !== resolvedRole) {
+                        await setDoc(
+                            userRef,
+                            { email: currentUser.email || '', role: resolvedRole },
+                            { merge: true }
+                        );
+                    }
+                } else {
+                    setRole(defaultRole);
+                    await setDoc(
+                        userRef,
+                        { email: currentUser.email || '', role: defaultRole },
+                        { merge: true }
+                    );
+                }
+            } catch (err) {
+                console.error("Error al obtener rol del usuario:", err);
+                setRole(defaultRole);
+            } finally {
+                setLoading(false);
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -42,8 +88,20 @@ export const useAuth = () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             
-            // Send verification email immediately after registration
+            // Send verification email and initialize Firestore user profile with role
             if (userCredential.user) {
+                const initialRole: UserRole = isDefaultAdminEmail(userCredential.user.email)
+                    ? 'admin'
+                    : 'visitante';
+                try {
+                    await setDoc(
+                        doc(db, 'users', userCredential.user.uid),
+                        { email: userCredential.user.email || email, role: initialRole },
+                        { merge: true }
+                    );
+                } catch (e) {
+                    console.error("No se pudo guardar el perfil inicial en Firestore:", e);
+                }
                 await sendEmailVerification(userCredential.user);
             }
             
@@ -92,5 +150,5 @@ export const useAuth = () => {
         return null;
     };
 
-    return { user, loading, login, register, logout, resendVerificationEmail, reloadUser };
+    return { user, role, setRole, loading, login, register, logout, resendVerificationEmail, reloadUser };
 };

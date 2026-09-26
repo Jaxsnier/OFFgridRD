@@ -18,6 +18,8 @@ import InicioPage from './src/components/InicioPage';
 import CalculadoraSolarPage from './src/components/CalculadoraSolarPage';
 import InstalacionPersonalizadaPage from './src/components/InstalacionPersonalizadaPage';
 import CotizacionPage from './src/components/CotizacionPage';
+import RoleAccessGate from './src/components/auth/RoleAccessGate';
+import { canAccessView } from './src/components/auth/rolesConfig';
 
 export type View = 'inicio' | 'calculadora' | 'instalacion_personalizada' | 'cotizacion' | 'potenciales' | 'nosotros';
 
@@ -121,6 +123,7 @@ const App: React.FC = () => {
                     isDarkMode={isDarkMode}
                     toggleDarkMode={toggleDarkMode}
                     user={auth.user}
+                    role={auth.role}
                 />
                 
                 <Sidebar
@@ -139,34 +142,58 @@ const App: React.FC = () => {
                     {activeView === 'inicio' && <InicioPage />}
                     {activeView === 'calculadora' && <CalculadoraSolarPage />}
                     {activeView === 'instalacion_personalizada' && <InstalacionPersonalizadaPage />}
-                    {activeView === 'cotizacion' && <CotizacionPage />}
+                    {activeView === 'cotizacion' && (
+                        canAccessView(auth.role, 'cotizacion') ? (
+                            <CotizacionPage />
+                        ) : (
+                            <RoleAccessGate
+                                currentRole={auth.role}
+                                requiredRoleText="Vendedor o Administrador"
+                                sectionName="Cotización"
+                                isLoggedIn={!!auth.user}
+                                onGoHome={() => setActiveView('inicio')}
+                                onOpenMenu={() => setIsSidebarOpen(true)}
+                            />
+                        )
+                    )}
                     {activeView === 'nosotros' && <NosotrosPage />}
                     {activeView === 'potenciales' && (
-                        <>
-                            {scriptLoaded ? (
-                                <MapComponent 
-                                    onMapLoad={handleMapLoad}
-                                    paginatedClients={clientData.paginatedClients}
-                                    filteredClients={clientData.finalFilteredClients}
-                                    referencePoint={clientData.referencePoint}
-                                    radiusMeters={clientData.radiusMeters}
-                                    isSettingCenter={isSettingCenter}
-                                    onSetReferencePoint={clientData.onSetReferencePoint}
-                                    onIsSettingCenterChange={setIsSettingCenter}
-                                    onClientSelect={clientData.handleClientSelect}
-                                    onUpdateClient={clientData.handleUpdateClient}
-                                    selectedClientId={clientData.selectedClientId}
-                                    infoWindowRef={infoWindowRef}
-                                />
-                            ) : (
-                                <ApiKeyGate 
-                                    onSubmit={handleKeySubmit} 
-                                    error={apiKeyError} 
-                                    isLoading={isLoadingScript} 
-                                    initialValue={dbApiKey}
-                                />
-                            )}
-                        </>
+                        canAccessView(auth.role, 'potenciales') ? (
+                            <>
+                                {scriptLoaded ? (
+                                    <MapComponent 
+                                        onMapLoad={handleMapLoad}
+                                        paginatedClients={clientData.paginatedClients}
+                                        filteredClients={clientData.finalFilteredClients}
+                                        referencePoint={clientData.referencePoint}
+                                        radiusMeters={clientData.radiusMeters}
+                                        isSettingCenter={isSettingCenter}
+                                        onSetReferencePoint={clientData.onSetReferencePoint}
+                                        onIsSettingCenterChange={setIsSettingCenter}
+                                        onClientSelect={clientData.handleClientSelect}
+                                        onUpdateClient={clientData.handleUpdateClient}
+                                        selectedClientId={clientData.selectedClientId}
+                                        infoWindowRef={infoWindowRef}
+                                    />
+                                ) : (
+                                    <ApiKeyGate 
+                                        onSubmit={handleKeySubmit} 
+                                        error={apiKeyError} 
+                                        isLoading={isLoadingScript} 
+                                        initialValue={dbApiKey}
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <RoleAccessGate
+                                currentRole={auth.role}
+                                requiredRoleText="Administrador"
+                                sectionName="Base De Datos"
+                                isLoggedIn={!!auth.user}
+                                onGoHome={() => setActiveView('inicio')}
+                                onOpenMenu={() => setIsSidebarOpen(true)}
+                            />
+                        )
                     )}
                 </main>
             </div>

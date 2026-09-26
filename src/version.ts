@@ -1,2 +1,2 @@
-// Versión v1.1.6.8: Eliminación de Instalación Personalizada del menú y protección por PIN (1313) en sección Cotización
-export const APP_VERSION = 'v1.1.6.8';
+// Versión v1.1.6.9: Implementación de Control de Acceso Basado en Roles (RBAC: Administrador, Vendedor y Visitante)
+export const APP_VERSION = 'v1.1.6.9';

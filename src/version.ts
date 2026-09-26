@@ -1,2 +1,2 @@
-// Versión v1.1.7.1: Eliminación del requerimiento de PIN en la sección Cotización (control de acceso gestionado por rol RBAC)
-export const APP_VERSION = 'v1.1.7.1';
+// Versión v1.1.7.2: Restricción de cuentas administradoras predeterminadas únicamente a eligioestevez@hotmail.com y eligiomajestic@gmail.com
+export const APP_VERSION = 'v1.1.7.2';

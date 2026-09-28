@@ -1,2 +1,2 @@
-// Versión v1.1.7.4: Inclusión de Inversor híbrido Ion 12kW ($2,450 USD) y sincronización de precios de Baterías American (5kW = $900, 10kW = $1,800 USD)
-export const APP_VERSION = 'v1.1.7.4';
+// Versión v1.1.7.5: Inclusión de Inversor híbrido Deye 8kW ($1,934 USD) e Inversor híbrido Deye 12kW ($2,392 USD)
+export const APP_VERSION = 'v1.1.7.5';

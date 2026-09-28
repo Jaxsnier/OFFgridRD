@@ -1,4 +1,5 @@
 import {
+    CATALOGO_INVERSORES,
     INVERSOR_HIBRIDO_DEYE_6KW_USD,
     INVERSOR_HIBRIDO_ION_8KW_USD,
     INVERSOR_HIBRIDO_ION_12KW_USD,
@@ -19,7 +20,17 @@ export const calculateInverterPartida = (
     let unitPriceUsd = INVERSOR_HIBRIDO_DEYE_6KW_USD;
     let quantity = 1;
 
-    if (input.inverterCapacityKw <= 6) {
+    const exactModel = input.inverterModelId
+        ? CATALOGO_INVERSORES.find(
+              (m) => m.id === input.inverterModelId && m.capacityKw === input.inverterCapacityKw
+          )
+        : undefined;
+
+    if (exactModel) {
+        modelName = exactModel.name;
+        unitPriceUsd = exactModel.priceUsd;
+        quantity = 1;
+    } else if (input.inverterCapacityKw <= 6) {
         modelName = 'Inversor híbrido Deye 6kW';
         unitPriceUsd = INVERSOR_HIBRIDO_DEYE_6KW_USD;
         quantity = 1;

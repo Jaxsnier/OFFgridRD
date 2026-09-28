@@ -46,12 +46,23 @@ export const SystemSizingSection: React.FC<SystemSizingSectionProps> = ({ input,
                     </label>
                     <div className="space-y-2 mb-3">
                         {CATALOGO_INVERSORES.map((inv) => {
-                            const isSelected = input.inverterCapacityKw === inv.capacityKw;
+                            const isSelected = input.inverterModelId
+                                ? input.inverterModelId === inv.id
+                                : input.inverterCapacityKw === inv.capacityKw &&
+                                  (inv.id === 'deye_6kw' ||
+                                      inv.id === 'ion_8kw' ||
+                                      inv.id === 'ion_12kw' ||
+                                      inv.id === 'ion_16kw');
                             return (
                                 <button
                                     key={inv.id}
                                     type="button"
-                                    onClick={() => onChange({ inverterCapacityKw: inv.capacityKw })}
+                                    onClick={() =>
+                                        onChange({
+                                            inverterCapacityKw: inv.capacityKw,
+                                            inverterModelId: inv.id
+                                        })
+                                    }
                                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-left transition ${
                                         isSelected
                                             ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-600 text-blue-900 dark:text-blue-100 ring-2 ring-blue-500/20'

@@ -16,6 +16,7 @@ export interface ClientInfo {
 export interface QuoteInput {
     client: ClientInfo;
     inverterCapacityKw: number;
+    inverterModelId?: string;
     peakPowerKwp: number;
     quality: EquipmentQuality;
     systemType: SystemType;

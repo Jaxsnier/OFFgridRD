@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { QuoteInput } from './cotizacion/types';
+import { BudgetItemOverride, QuoteInput } from './cotizacion/types';
 import { DEFAULT_QUOTE_INPUT, QuotePreset } from './cotizacion/constants';
 import { calculateQuote } from './cotizacion/utils/pricingCalculator';
 import QuotePresets from './cotizacion/components/QuotePresets';
@@ -13,9 +13,7 @@ export type CotizacionTab = 'config' | 'cliente' | 'interno';
 export const CotizacionPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<CotizacionTab>('config');
     const [quoteInput, setQuoteInput] = useState<QuoteInput>(DEFAULT_QUOTE_INPUT);
-    const [customOverrides, setCustomOverrides] = useState<
-        Record<string, { costInternal?: number; priceQuoted?: number }>
-    >({});
+    const [customOverrides, setCustomOverrides] = useState<Record<string, BudgetItemOverride>>({});
 
     // Calculate quote results
     const calculation = useMemo(() => {
@@ -50,16 +48,24 @@ export const CotizacionPage: React.FC = () => {
         }));
     };
 
-    const handleUpdateOverride = (itemId: string, costInternal?: number, priceQuoted?: number) => {
+    const handleUpdateOverride = (itemId: string, updates: BudgetItemOverride) => {
         setCustomOverrides((prev) => {
             const current = prev[itemId] || {};
             return {
                 ...prev,
                 [itemId]: {
-                    costInternal: costInternal !== undefined ? costInternal : current.costInternal,
-                    priceQuoted: priceQuoted !== undefined ? priceQuoted : current.priceQuoted
+                    ...current,
+                    ...updates
                 }
             };
+        });
+    };
+
+    const handleResetItemOverride = (itemId: string) => {
+        setCustomOverrides((prev) => {
+            const updated = { ...prev };
+            delete updated[itemId];
+            return updated;
         });
     };
 
@@ -176,6 +182,7 @@ export const CotizacionPage: React.FC = () => {
                         input={quoteInput}
                         calculation={calculation}
                         onUpdateOverride={handleUpdateOverride}
+                        onResetItemOverride={handleResetItemOverride}
                         onResetOverrides={handleResetOverrides}
                         onBackToEdit={() => setActiveTab('config')}
                         onViewClientQuote={() => setActiveTab('cliente')}

@@ -1,4 +1,4 @@
-import { BudgetDivisionItem, QuoteCalculationResult, QuoteInput } from '../types';
+import { BudgetDivisionItem, BudgetItemOverride, QuoteCalculationResult, QuoteInput } from '../types';
 import { QUALITY_DETAILS } from '../constants';
 import {
     MARGEN_GANANCIA_MIN_PERCENT,
@@ -19,7 +19,7 @@ export { formatCurrency } from './currencyFormatter';
 
 export const calculateQuote = (
     input: QuoteInput,
-    customOverrides: Record<string, { costInternal?: number; priceQuoted?: number }> = {}
+    customOverrides: Record<string, BudgetItemOverride> = {}
 ): QuoteCalculationResult => {
     const qConfig = QUALITY_DETAILS[input.quality];
 
@@ -96,6 +96,14 @@ export const calculateQuote = (
         if (override) {
             return {
                 ...item,
+                category:
+                    override.category !== undefined && override.category.trim() !== ''
+                        ? override.category
+                        : item.category,
+                description:
+                    override.description !== undefined ? override.description : item.description,
+                unitDetail:
+                    override.unitDetail !== undefined ? override.unitDetail : item.unitDetail,
                 costInternal:
                     override.costInternal !== undefined ? override.costInternal : item.costInternal,
                 priceQuoted:

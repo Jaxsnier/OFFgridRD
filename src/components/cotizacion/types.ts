@@ -45,6 +45,10 @@ export interface BudgetDivisionItem {
     isCustomOverridden?: boolean;
 }
 
+export type BudgetItemOverride = Partial<
+    Pick<BudgetDivisionItem, 'category' | 'description' | 'unitDetail' | 'costInternal' | 'priceQuoted'>
+>;
+
 export interface QuoteCalculationResult {
     items: BudgetDivisionItem[];
     totalInternalCost: number;

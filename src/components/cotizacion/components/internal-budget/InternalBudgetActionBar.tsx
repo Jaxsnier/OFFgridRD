@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { QuoteCalculationResult, QuoteInput } from '../../types';
 import { formatCurrency } from '../../utils/pricingCalculator';
+import { InternalBudgetColumnsVisibility } from './budgetColumnsConfig';
+import InternalBudgetColumnSelector from './InternalBudgetColumnSelector';
 
 interface InternalBudgetActionBarProps {
     input: QuoteInput;
     calculation: QuoteCalculationResult;
+    visibleColumns: InternalBudgetColumnsVisibility;
+    onChangeVisibleColumns: (updated: InternalBudgetColumnsVisibility) => void;
     onBackToEdit: () => void;
     onViewClientQuote: () => void;
     onResetOverrides: () => void;
@@ -14,6 +18,8 @@ interface InternalBudgetActionBarProps {
 export const InternalBudgetActionBar: React.FC<InternalBudgetActionBarProps> = ({
     input,
     calculation,
+    visibleColumns,
+    onChangeVisibleColumns,
     onBackToEdit,
     onViewClientQuote,
     onResetOverrides,
@@ -75,6 +81,10 @@ export const InternalBudgetActionBar: React.FC<InternalBudgetActionBarProps> = (
                 >
                     Restablecer Todos los Ajustes
                 </button>
+                <InternalBudgetColumnSelector
+                    visibleColumns={visibleColumns}
+                    onChangeVisibleColumns={onChangeVisibleColumns}
+                />
                 <button
                     type="button"
                     onClick={handleCopyBreakdown}

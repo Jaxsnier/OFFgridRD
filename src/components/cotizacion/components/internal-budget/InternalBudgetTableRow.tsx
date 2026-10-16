@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { BudgetDivisionItem, BudgetItemOverride } from '../../types';
 import { formatCurrency } from '../../utils/pricingCalculator';
+import { InternalBudgetColumnsVisibility } from './budgetColumnsConfig';
 
 interface InternalBudgetTableRowProps {
     item: BudgetDivisionItem;
     currency: 'DOP' | 'USD';
     exchangeRate: number;
+    visibleColumns: InternalBudgetColumnsVisibility;
+    colSpan: number;
     isEditing: boolean;
     onStartEdit: () => void;
     onCancelEdit: () => void;
@@ -17,6 +20,8 @@ export const InternalBudgetTableRow: React.FC<InternalBudgetTableRowProps> = ({
     item,
     currency,
     exchangeRate,
+    visibleColumns,
+    colSpan,
     isEditing,
     onStartEdit,
     onCancelEdit,
@@ -60,7 +65,7 @@ export const InternalBudgetTableRow: React.FC<InternalBudgetTableRowProps> = ({
     if (isEditing) {
         return (
             <tr className="bg-amber-50/70 dark:bg-amber-950/40 border-2 border-blue-500/70 transition-all">
-                <td colSpan={6} className="p-4">
+                <td colSpan={colSpan} className="p-4">
                     <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md space-y-4">
                         <div className="flex items-center justify-between border-b pb-2 dark:border-slate-700">
                             <div className="flex items-center gap-2">
@@ -214,47 +219,57 @@ export const InternalBudgetTableRow: React.FC<InternalBudgetTableRowProps> = ({
                 item.isCustomOverridden ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
             }`}
         >
-            <td className="py-3 px-3">
-                <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>{item.category}</span>
-                    {item.isCustomOverridden && (
-                        <span className="text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 px-1.5 py-0.2 rounded font-medium">
-                            Editado
-                        </span>
-                    )}
-                </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1" title={item.description}>
-                    {item.description}
-                </div>
-            </td>
+            {visibleColumns.category && (
+                <td className="py-3 px-3">
+                    <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{item.category}</span>
+                        {item.isCustomOverridden && (
+                            <span className="text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 px-1.5 py-0.2 rounded font-medium">
+                                Editado
+                            </span>
+                        )}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1" title={item.description}>
+                        {item.description}
+                    </div>
+                </td>
+            )}
 
-            <td className="py-3 px-3 font-medium whitespace-nowrap text-slate-600 dark:text-slate-400">
-                {item.unitDetail}
-            </td>
+            {visibleColumns.unitDetail && (
+                <td className="py-3 px-3 font-medium whitespace-nowrap text-slate-600 dark:text-slate-400">
+                    {item.unitDetail}
+                </td>
+            )}
 
             {/* Costo Presupuesto Interno */}
-            <td className="py-3 px-3 text-right">
-                <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                    {formatCurrency(item.costInternal, currency, exchangeRate)}
-                </span>
-            </td>
+            {visibleColumns.costInternal && (
+                <td className="py-3 px-3 text-right">
+                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                        {formatCurrency(item.costInternal, currency, exchangeRate)}
+                    </span>
+                </td>
+            )}
 
             {/* Precio Cotizado Cliente */}
-            <td className="py-3 px-3 text-right">
-                <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
-                    {formatCurrency(item.priceQuoted, currency, exchangeRate)}
-                </span>
-            </td>
+            {visibleColumns.priceQuoted && (
+                <td className="py-3 px-3 text-right">
+                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                        {formatCurrency(item.priceQuoted, currency, exchangeRate)}
+                    </span>
+                </td>
+            )}
 
-            {/* Margen */}
-            <td className="py-3 px-3 text-right whitespace-nowrap">
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 block">
-                    +{formatCurrency(itemProfit, currency, exchangeRate)}
-                </span>
-                <span className="text-[10px] text-slate-400">
-                    ({itemMargin}%)
-                </span>
-            </td>
+            {/* Margen / Ganancia */}
+            {visibleColumns.marginProfit && (
+                <td className="py-3 px-3 text-right whitespace-nowrap">
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 block">
+                        +{formatCurrency(itemProfit, currency, exchangeRate)}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                        ({itemMargin}%)
+                    </span>
+                </td>
+            )}
 
             {/* Action */}
             <td className="py-3 px-3 text-center print:hidden">

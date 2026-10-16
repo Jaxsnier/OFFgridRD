@@ -6,6 +6,10 @@ import InternalBudgetActionBar from './internal-budget/InternalBudgetActionBar';
 import InternalBudgetKpiCards from './internal-budget/InternalBudgetKpiCards';
 import InternalBudgetTableRow from './internal-budget/InternalBudgetTableRow';
 import InternalBudgetNotes from './internal-budget/InternalBudgetNotes';
+import {
+    DEFAULT_COLUMNS_VISIBILITY,
+    InternalBudgetColumnsVisibility
+} from './internal-budget/budgetColumnsConfig';
 
 interface InternalBudgetViewProps {
     input: QuoteInput;
@@ -27,11 +31,25 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
     onViewClientQuote
 }) => {
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
+    const [visibleColumns, setVisibleColumns] = useState<InternalBudgetColumnsVisibility>(
+        DEFAULT_COLUMNS_VISIBILITY
+    );
 
     const handlePrint = () => {
         const title = `Presupuesto_Interno_${input.client.name.replace(/\s+/g, '_')}_${input.inverterCapacityKw}kW`;
         printElementById('printable-internal-budget-document', title);
     };
+
+    // Calculate dynamic column spans for table structure
+    const visibleColumnCount =
+        (visibleColumns.category ? 1 : 0) +
+        (visibleColumns.unitDetail ? 1 : 0) +
+        (visibleColumns.costInternal ? 1 : 0) +
+        (visibleColumns.priceQuoted ? 1 : 0) +
+        (visibleColumns.marginProfit ? 1 : 0) +
+        1; // Action column (print:hidden)
+
+    const leadingColSpan = (visibleColumns.category ? 1 : 0) + (visibleColumns.unitDetail ? 1 : 0);
 
     return (
         <div className="space-y-6">
@@ -39,6 +57,8 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
             <InternalBudgetActionBar
                 input={input}
                 calculation={calculation}
+                visibleColumns={visibleColumns}
+                onChangeVisibleColumns={setVisibleColumns}
                 onBackToEdit={onBackToEdit}
                 onViewClientQuote={onViewClientQuote}
                 onResetOverrides={() => {
@@ -71,7 +91,7 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
                             Presupuesto Dividido por Partidas
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Desglose de compras, materiales de canalización, equipos, protecciones y márgenes comerciales. Haz clic en <strong>Ajustar</strong> para modificar el nombre, descripción, cantidad o precios de cualquier partida.
+                            Desglose de compras, materiales de canalización, equipos, protecciones y márgenes comerciales. Haz clic en <strong>Ajustar</strong> para modificar cualquier partida o usa <strong>Columnas</strong> para mostrar u ocultar campos.
                         </p>
                     </div>
 
@@ -88,11 +108,21 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
                     <table className="w-full text-left text-xs border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                         <thead className="bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200 uppercase font-bold text-[11px]">
                             <tr>
-                                <th className="py-3 px-3">Partida / Rubro</th>
-                                <th className="py-3 px-3">Especificación / Cantidad</th>
-                                <th className="py-3 px-3 text-right">Presupuesto Costo</th>
-                                <th className="py-3 px-3 text-right">Precio Cotizado</th>
-                                <th className="py-3 px-3 text-right">Margen / Ganancia</th>
+                                {visibleColumns.category && (
+                                    <th className="py-3 px-3">Partida / Rubro</th>
+                                )}
+                                {visibleColumns.unitDetail && (
+                                    <th className="py-3 px-3">Especificación / Cantidad</th>
+                                )}
+                                {visibleColumns.costInternal && (
+                                    <th className="py-3 px-3 text-right">Presupuesto Costo</th>
+                                )}
+                                {visibleColumns.priceQuoted && (
+                                    <th className="py-3 px-3 text-right">Precio Cotizado</th>
+                                )}
+                                {visibleColumns.marginProfit && (
+                                    <th className="py-3 px-3 text-right">Margen / Ganancia</th>
+                                )}
                                 <th className="py-3 px-3 text-center print:hidden">Acción</th>
                             </tr>
                         </thead>
@@ -103,6 +133,8 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
                                     item={item}
                                     currency={input.currency}
                                     exchangeRate={input.exchangeRate}
+                                    visibleColumns={visibleColumns}
+                                    colSpan={visibleColumnCount}
                                     isEditing={editingItemId === item.id}
                                     onStartEdit={() => setEditingItemId(item.id)}
                                     onCancelEdit={() => setEditingItemId(null)}
@@ -122,18 +154,26 @@ export const InternalBudgetView: React.FC<InternalBudgetViewProps> = ({
                         {/* Table Footer Totals */}
                         <tfoot className="bg-slate-100 dark:bg-slate-700/80 font-bold border-t-2 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
                             <tr>
-                                <td className="py-3 px-3 uppercase text-xs" colSpan={2}>
-                                    Totales Generales de Obra
-                                </td>
-                                <td className="py-3 px-3 text-right font-mono text-sm">
-                                    {formatCurrency(calculation.totalInternalCost, input.currency, input.exchangeRate)}
-                                </td>
-                                <td className="py-3 px-3 text-right font-mono text-sm text-blue-600 dark:text-blue-300">
-                                    {formatCurrency(calculation.totalQuotedPrice, input.currency, input.exchangeRate)}
-                                </td>
-                                <td className="py-3 px-3 text-right font-mono text-sm text-emerald-600 dark:text-emerald-400">
-                                    +{formatCurrency(calculation.estimatedProfit, input.currency, input.exchangeRate)}
-                                </td>
+                                {leadingColSpan > 0 && (
+                                    <td className="py-3 px-3 uppercase text-xs" colSpan={leadingColSpan}>
+                                        Totales Generales de Obra
+                                    </td>
+                                )}
+                                {visibleColumns.costInternal && (
+                                    <td className="py-3 px-3 text-right font-mono text-sm">
+                                        {formatCurrency(calculation.totalInternalCost, input.currency, input.exchangeRate)}
+                                    </td>
+                                )}
+                                {visibleColumns.priceQuoted && (
+                                    <td className="py-3 px-3 text-right font-mono text-sm text-blue-600 dark:text-blue-300">
+                                        {formatCurrency(calculation.totalQuotedPrice, input.currency, input.exchangeRate)}
+                                    </td>
+                                )}
+                                {visibleColumns.marginProfit && (
+                                    <td className="py-3 px-3 text-right font-mono text-sm text-emerald-600 dark:text-emerald-400">
+                                        +{formatCurrency(calculation.estimatedProfit, input.currency, input.exchangeRate)}
+                                    </td>
+                                )}
                                 <td className="print:hidden"></td>
                             </tr>
                         </tfoot>

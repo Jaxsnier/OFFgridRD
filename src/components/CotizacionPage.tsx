@@ -171,6 +171,7 @@ export const CotizacionPage: React.FC = () => {
                     <ClientQuoteView
                         input={quoteInput}
                         calculation={calculation}
+                        onChangeInput={handleInputChange}
                         onBackToEdit={() => setActiveTab('config')}
                         onViewInternalBudget={() => setActiveTab('interno')}
                     />

@@ -8,6 +8,10 @@ export const buildClientQuoteShareText = (
     calculation: QuoteCalculationResult
 ): string => {
     const qDetails = QUALITY_DETAILS[input.quality];
+    const effectiveTotal =
+        input.customClientTotal !== undefined
+            ? input.customClientTotal
+            : calculation.totalQuotedPrice;
 
     return `☀️ *COTIZACIÓN SOLAR ${DATOS_EMPRESA.nombreComercial}* ☀️
 🏢 *${DATOS_EMPRESA.razonSocial}* | RNC: ${DATOS_EMPRESA.rnc}
@@ -24,12 +28,13 @@ export const buildClientQuoteShareText = (
 • Protecciones: DC/AC de grado industrial + Puesta a tierra
 ${input.includeBatteries ? `• Batería: ${input.batteryKwh} kWh Litio LiFePO4\n` : ''}
 💰 *INVERSIÓN TOTAL LLAVE EN MANO:*
-👉 ${formatCurrency(calculation.totalQuotedPrice, input.currency, input.exchangeRate)} ${input.currency}
+👉 ${formatCurrency(effectiveTotal, input.currency, input.exchangeRate)} ${input.currency}${input.showDiscount5PercentBadge ? ' *(5% descuento aplicado)*' : ''}
 
 🛡️ *GARANTÍAS:*
 • Inversor: ${calculation.specs.warrantyInverter}
 • Paneles: ${calculation.specs.warrantyPanels}
-• Instalación y soporte técnico garantizado
+• Instalación y fijaciones: 2 años de garantía técnica
+*(Nota: Garantías sujetas a variantes según fabricante)*
 
 📞 *Contacto:* ${DATOS_EMPRESA.telefonoWhatsapp}
 📍 *Dirección:* ${DATOS_EMPRESA.direccion}
@@ -41,8 +46,15 @@ export const buildClientWhatsAppUrl = (
     calculation: QuoteCalculationResult
 ): string => {
     const cleanPhone = input.client.phone.replace(/[^0-9]/g, '');
+    const effectiveTotal =
+        input.customClientTotal !== undefined
+            ? input.customClientTotal
+            : calculation.totalQuotedPrice;
+
+    const discountText = input.showDiscount5PercentBadge ? ' (5% descuento aplicado)' : '';
+
     const message = encodeURIComponent(
-        `Hola ${input.client.name}, le comparto la cotización formal de su sistema solar con OFFgridRD (${input.inverterCapacityKw}kW / ${input.peakPowerKwp.toFixed(1)}kWp). Inversión total: ${formatCurrency(calculation.totalQuotedPrice, input.currency, input.exchangeRate)}.`
+        `Hola ${input.client.name}, le comparto la cotización formal de su sistema solar con OFFgridRD (${input.inverterCapacityKw}kW / ${input.peakPowerKwp.toFixed(1)}kWp). Inversión total: ${formatCurrency(effectiveTotal, input.currency, input.exchangeRate)}${discountText}.`
     );
     return cleanPhone
         ? `https://wa.me/${cleanPhone}?text=${message}`

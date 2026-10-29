@@ -15,13 +15,15 @@ interface ClientQuoteViewProps {
     calculation: QuoteCalculationResult;
     onBackToEdit: () => void;
     onViewInternalBudget: () => void;
+    onChangeInput?: (updated: Partial<QuoteInput>) => void;
 }
 
 export const ClientQuoteView: React.FC<ClientQuoteViewProps> = ({
     input,
     calculation,
     onBackToEdit,
-    onViewInternalBudget
+    onViewInternalBudget,
+    onChangeInput
 }) => {
     const [copied, setCopied] = useState(false);
 
@@ -42,15 +44,20 @@ export const ClientQuoteView: React.FC<ClientQuoteViewProps> = ({
         window.open(url, '_blank');
     };
 
+    const handleInputChange = onChangeInput || (() => {});
+
     return (
         <div className="space-y-6">
             <ClientQuoteActionBar
+                input={input}
+                calculation={calculation}
                 copied={copied}
                 onBackToEdit={onBackToEdit}
                 onViewInternalBudget={onViewInternalBudget}
                 onCopyText={handleCopyText}
                 onWhatsApp={handleWhatsApp}
                 onPrint={handlePrint}
+                onChangeInput={handleInputChange}
             />
 
             <div
@@ -59,7 +66,11 @@ export const ClientQuoteView: React.FC<ClientQuoteViewProps> = ({
             >
                 <ClientQuoteHeader input={input} calculation={calculation} />
                 <ClientQuoteEquipmentTable input={input} calculation={calculation} />
-                <ClientQuoteFooter input={input} calculation={calculation} />
+                <ClientQuoteFooter
+                    input={input}
+                    calculation={calculation}
+                    onChangeInput={handleInputChange}
+                />
             </div>
         </div>
     );

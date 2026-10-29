@@ -33,6 +33,9 @@ export interface QuoteInput {
     includeMeterBaseCl200?: boolean; // Base CL 200 para medidor ($150 USD)
     includeAdjustableBase?: boolean; // Base ajustable 15° de aluminio ($8 USD)
     cableRollsCount?: number; // Rollo de cable PV 4mm ($100 USD)
+    // Opciones visuales y de cierre en cotización cliente
+    customClientTotal?: number; // Modificación manual del valor total
+    showDiscount5PercentBadge?: boolean; // Letrero informativo "(5% descuento aplicado)"
 }
 
 export interface BudgetDivisionItem {

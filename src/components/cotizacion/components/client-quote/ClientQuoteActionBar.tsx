@@ -1,21 +1,29 @@
 import React from 'react';
+import { QuoteCalculationResult, QuoteInput } from '../../types';
+import ClientQuoteVisualControls from './ClientQuoteVisualControls';
 
 interface ClientQuoteActionBarProps {
+    input: QuoteInput;
+    calculation: QuoteCalculationResult;
     copied: boolean;
     onBackToEdit: () => void;
     onViewInternalBudget: () => void;
     onCopyText: () => void;
     onWhatsApp: () => void;
     onPrint: () => void;
+    onChangeInput: (updated: Partial<QuoteInput>) => void;
 }
 
 export const ClientQuoteActionBar: React.FC<ClientQuoteActionBarProps> = ({
+    input,
+    calculation,
     copied,
     onBackToEdit,
     onViewInternalBudget,
     onCopyText,
     onWhatsApp,
-    onPrint
+    onPrint,
+    onChangeInput
 }) => {
     return (
         <div className="print:hidden flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -37,6 +45,13 @@ export const ClientQuoteActionBar: React.FC<ClientQuoteActionBarProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+                {/* Visual adjustments & total editor */}
+                <ClientQuoteVisualControls
+                    input={input}
+                    calculation={calculation}
+                    onChangeInput={onChangeInput}
+                />
+
                 <button
                     type="button"
                     onClick={onCopyText}
